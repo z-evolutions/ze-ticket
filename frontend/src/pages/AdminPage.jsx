@@ -10,9 +10,6 @@ import UsersPage from './UsersPage'
 import GroupsPage from './GroupsPage'
 import './AdminPage.css'
 
-// ── Hilfsfunktion ──────────────────────────────────────────────────────────────
-
-
 function minutesToReadable(min) {
   if (min < 60) return `${min} Min.`
   const h = Math.floor(min / 60)
@@ -20,7 +17,6 @@ function minutesToReadable(min) {
   return m > 0 ? `${h}h ${m}min` : `${h}h`
 }
 
-// ── Stat-Karte ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, color }) {
   return (
     <div className="admin-stat glass">
@@ -33,24 +29,20 @@ function StatCard({ label, value, color }) {
 // ── Tab: Übersicht ─────────────────────────────────────────────────────────────
 function TabOverview({ t }) {
   const [stats, setStats] = useState(null)
-
   useEffect(() => {
     axios.get('/api/admin/stats').then(r => setStats(r.data)).catch(() => {})
   }, [])
-
-  if (!stats) return <div className="admin-loading">Lade Statistiken…</div>
-
+  if (!stats) return <div className="admin-loading">{t('admin.loading_stats')}</div>
   return (
     <div className="admin-overview">
-      <h2 className="admin-section-title">Benutzer</h2>
+      <h2 className="admin-section-title">{t('admin.section_users')}</h2>
       <div className="admin-stats-grid">
         <StatCard label={t('admin.stats_users_total')}  value={stats.users.total} />
         <StatCard label={t('admin.stats_users_active')} value={stats.users.active} color="cyan" />
         <StatCard label={t('admin.stats_users_agents')} value={stats.users.agents} color="warn" />
         <StatCard label={t('admin.stats_users_kunden')} value={stats.users.kunden} />
       </div>
-
-      <h2 className="admin-section-title">Tickets</h2>
+      <h2 className="admin-section-title">{t('admin.section_tickets')}</h2>
       <div className="admin-stats-grid">
         <StatCard label={t('admin.stats_tickets_total')}    value={stats.tickets.total} />
         <StatCard label={t('admin.stats_tickets_neu')}      value={stats.tickets.neu} color="cyan" />
@@ -59,8 +51,7 @@ function TabOverview({ t }) {
         <StatCard label={t('admin.stats_tickets_closed')}   value={stats.tickets.geschlossen} />
         <StatCard label={t('admin.stats_tickets_sla')}      value={stats.tickets.sla_breached} color="error" />
       </div>
-
-      <h2 className="admin-section-title">Gruppen & SLA</h2>
+      <h2 className="admin-section-title">{t('admin.section_groups_sla')}</h2>
       <div className="admin-stats-grid">
         <StatCard label={t('admin.stats_groups_total')}  value={stats.groups.total} />
         <StatCard label={t('admin.stats_groups_active')} value={stats.groups.active} color="cyan" />
@@ -81,7 +72,7 @@ const EMPTY_SLA = {
 function TabSLA({ t }) {
   const [slas,   setSlas]   = useState([])
   const [groups, setGroups] = useState([])
-  const [modal,  setModal]  = useState(null)   // null | 'new' | sla-object
+  const [modal,  setModal]  = useState(null)
   const [form,   setForm]   = useState(EMPTY_SLA)
   const [saving, setSaving] = useState(false)
   const [error,  setError]  = useState(null)
@@ -90,7 +81,6 @@ function TabSLA({ t }) {
     axios.get('/api/admin/slas').then(r => setSlas(r.data)).catch(() => {})
     axios.get('/api/groups/').then(r => setGroups(r.data.groups || [])).catch(() => {})
   }, [])
-
   useEffect(() => { load() }, [load])
 
   function openNew() { setForm(EMPTY_SLA); setModal('new'); setError(null) }
@@ -103,8 +93,7 @@ function TabSLA({ t }) {
       group_id: sla.group_id || null,
       is_public: sla.is_public, is_active: sla.is_active,
     })
-    setModal(sla)
-    setError(null)
+    setModal(sla); setError(null)
   }
 
   async function handleSave() {
@@ -115,17 +104,12 @@ function TabSLA({ t }) {
         resolution_time_minutes: parseInt(form.resolution_time_minutes),
         group_id: form.group_id || null,
       }
-      if (modal === 'new') {
-        await axios.post('/api/admin/slas', payload)
-      } else {
-        await axios.patch(`/api/admin/slas/${modal.id}`, payload)
-      }
+      if (modal === 'new') await axios.post('/api/admin/slas', payload)
+      else await axios.patch(`/api/admin/slas/${modal.id}`, payload)
       load(); setModal(null)
     } catch (err) {
-      setError(err.response?.data?.detail || 'Fehler beim Speichern.')
-    } finally {
-      setSaving(false)
-    }
+      setError(err.response?.data?.detail || t('admin.error_save'))
+    } finally { setSaving(false) }
   }
 
   async function handleDelete(sla) {
@@ -139,7 +123,6 @@ function TabSLA({ t }) {
       <div className="admin-toolbar">
         <button className="admin-btn-primary" onClick={openNew}>{t('admin.sla_new')}</button>
       </div>
-
       <div className="admin-table-wrap glass">
         <table className="admin-table">
           <thead>
@@ -156,7 +139,7 @@ function TabSLA({ t }) {
           </thead>
           <tbody>
             {slas.length === 0 ? (
-              <tr><td colSpan={8} className="admin-empty">Keine SLA-Regeln vorhanden.</td></tr>
+              <tr><td colSpan={8} className="admin-empty">{t('admin.sla_empty')}</td></tr>
             ) : slas.map(sla => (
               <tr key={sla.id}>
                 <td><strong>{sla.name}</strong>{sla.description && <div className="admin-sub">{sla.description}</div>}</td>
@@ -165,10 +148,12 @@ function TabSLA({ t }) {
                 <td><span className="admin-badge">{sla.priority_scope}</span></td>
                 <td>{sla.group_name || '—'}</td>
                 <td>{sla.is_public ? '✓' : '—'}</td>
-                <td><span className={`admin-status ${sla.is_active ? 'admin-status--active' : 'admin-status--inactive'}`}>{sla.is_active ? 'Aktiv' : 'Inaktiv'}</span></td>
+                <td><span className={`admin-status ${sla.is_active ? 'admin-status--active' : 'admin-status--inactive'}`}>
+                  {sla.is_active ? t('common.active') : t('common.inactive')}
+                </span></td>
                 <td className="admin-actions">
-                  <button className="admin-btn-sm" onClick={() => openEdit(sla)}>Bearbeiten</button>
-                  <button className="admin-btn-sm admin-btn-sm--danger" onClick={() => handleDelete(sla)}>Löschen</button>
+                  <button className="admin-btn-sm" onClick={() => openEdit(sla)}>{t('common.edit')}</button>
+                  <button className="admin-btn-sm admin-btn-sm--danger" onClick={() => handleDelete(sla)}>{t('common.delete')}</button>
                 </td>
               </tr>
             ))}
@@ -176,12 +161,11 @@ function TabSLA({ t }) {
         </table>
       </div>
 
-      {/* ── Modal ── */}
       {modal && (
         <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setModal(null)}>
           <div className="admin-modal glass">
             <div className="admin-modal__header">
-              <h3>{modal === 'new' ? t('admin.sla_new') : `SLA bearbeiten: ${modal.name}`}</h3>
+              <h3>{modal === 'new' ? t('admin.sla_new') : t('admin.sla_edit_title', { name: modal.name })}</h3>
               <button className="admin-modal__close" onClick={() => setModal(null)}>✕</button>
             </div>
             <div className="admin-modal__body">
@@ -209,11 +193,11 @@ function TabSLA({ t }) {
                 <div className="admin-form-field">
                   <label>{t('admin.sla_priority')}</label>
                   <select value={form.priority_scope} onChange={e => setForm(p => ({ ...p, priority_scope: e.target.value }))}>
-                    <option value="alle">Alle</option>
-                    <option value="niedrig">Niedrig</option>
-                    <option value="normal">Normal</option>
-                    <option value="hoch">Hoch</option>
-                    <option value="kritisch">Kritisch</option>
+                    <option value="alle">{t('admin.sla_all_priorities')}</option>
+                    <option value="niedrig">{t('tickets.priority_niedrig')}</option>
+                    <option value="normal">{t('tickets.priority_normal')}</option>
+                    <option value="hoch">{t('tickets.priority_hoch')}</option>
+                    <option value="kritisch">{t('tickets.priority_kritisch')}</option>
                   </select>
                 </div>
                 <div className="admin-form-field">
@@ -228,7 +212,7 @@ function TabSLA({ t }) {
                 <label className="admin-checkbox-label">
                   <input type="checkbox" checked={form.is_public}
                     onChange={e => setForm(p => ({ ...p, is_public: e.target.checked }))} />
-                  {t('admin.sla_public')} (im Kundenportal sichtbar)
+                  {t('admin.sla_public')} {t('admin.sla_public_hint')}
                 </label>
                 <label className="admin-checkbox-label">
                   <input type="checkbox" checked={form.is_active}
@@ -239,7 +223,7 @@ function TabSLA({ t }) {
               {error && <div className="admin-error">{error}</div>}
             </div>
             <div className="admin-modal__footer">
-              <button className="admin-btn-secondary" onClick={() => setModal(null)}>Abbrechen</button>
+              <button className="admin-btn-secondary" onClick={() => setModal(null)}>{t('common.cancel')}</button>
               <button className="admin-btn-primary" onClick={handleSave} disabled={saving}>
                 {saving ? t('admin.sla_saving') : t('admin.sla_save')}
               </button>
@@ -266,7 +250,6 @@ function TabAudit({ t }) {
       .then(r => { setEntries(r.data.entries); setTotal(r.data.total) })
       .catch(() => {})
   }, [page, filterAction])
-
   useEffect(() => { load() }, [load])
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -277,7 +260,6 @@ function TabAudit({ t }) {
         <input className="admin-filter-input" placeholder={t('admin.audit_filter_action')}
           value={filterAction} onChange={e => { setFilterAction(e.target.value); setPage(1) }} />
       </div>
-
       <div className="admin-table-wrap glass">
         <table className="admin-table admin-table--audit">
           <thead>
@@ -306,12 +288,11 @@ function TabAudit({ t }) {
           </tbody>
         </table>
       </div>
-
       {totalPages > 1 && (
         <div className="admin-pagination">
-          <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Zurück</button>
-          <span>Seite {page} / {totalPages} ({total} Einträge)</span>
-          <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Weiter →</button>
+          <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>{t('common.page_back')}</button>
+          <span>{t('admin.audit_page_info', { page, total: totalPages, count: total })}</span>
+          <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>{t('common.page_next')}</button>
         </div>
       )}
     </div>
@@ -329,17 +310,14 @@ function TabSystem({ t }) {
   const [textMsg,      setTextMsg]      = useState(null)
   const fileRef = useRef(null)
 
-  // App-Einstellungen
-  const [appName, setAppName]         = useState('')
+  const [appName, setAppName]             = useState('')
   const [appNameSaving, setAppNameSaving] = useState(false)
   const [appNameMsg,    setAppNameMsg]    = useState(null)
 
-  // Betreiber-Daten
-  const [company, setCompany]       = useState({ company_name: '', company_street: '', company_zip: '', company_email: '', company_phone: '', company_owner: '' })
+  const [company, setCompany]           = useState({ company_name: '', company_street: '', company_zip: '', company_email: '', company_phone: '', company_owner: '' })
   const [companySaving, setCompanySaving] = useState(false)
   const [companyMsg,    setCompanyMsg]    = useState(null)
 
-  // Ticket-Sichtbarkeit + Gruppen-Kacheln
   const [ticketVisibility, setTicketVisibility] = useState('own_and_unassigned')
   const [showGroupTiles,   setShowGroupTiles]   = useState('true')
   const [settingsSaving,   setSettingsSaving]   = useState(false)
@@ -361,9 +339,9 @@ function TabSystem({ t }) {
     setAppNameSaving(true)
     try {
       await axios.patch('/api/config/app_name', { value: appName })
-      setAppNameMsg({ type: 'success', text: 'App-Name gespeichert ✓' })
+      setAppNameMsg({ type: 'success', text: t('admin.system_appname_saved') })
     } catch {
-      setAppNameMsg({ type: 'error', text: 'Fehler beim Speichern.' })
+      setAppNameMsg({ type: 'error', text: t('admin.error_save') })
     } finally {
       setAppNameSaving(false)
       setTimeout(() => setAppNameMsg(null), 3000)
@@ -376,9 +354,9 @@ function TabSystem({ t }) {
       await Promise.all(Object.entries(company).map(([key, value]) =>
         axios.patch(`/api/config/${key}`, { value })
       ))
-      setCompanyMsg({ type: 'success', text: 'Betreiber-Daten gespeichert ✓' })
+      setCompanyMsg({ type: 'success', text: t('admin.system_company_saved') })
     } catch {
-      setCompanyMsg({ type: 'error', text: 'Fehler beim Speichern.' })
+      setCompanyMsg({ type: 'error', text: t('admin.error_save') })
     } finally {
       setCompanySaving(false)
       setTimeout(() => setCompanyMsg(null), 3000)
@@ -392,26 +370,28 @@ function TabSystem({ t }) {
         axios.patch('/api/config/ticket_visibility', { value: ticketVisibility }),
         axios.patch('/api/config/show_group_tiles',  { value: showGroupTiles }),
       ])
-      setSettingsMsg({ type: 'success', text: 'Einstellungen gespeichert ✓' })
+      setSettingsMsg({ type: 'success', text: t('admin.system_settings_saved') })
     } catch {
-      setSettingsMsg({ type: 'error', text: 'Fehler beim Speichern.' })
+      setSettingsMsg({ type: 'error', text: t('admin.error_save') })
     } finally {
       setSettingsSaving(false)
       setTimeout(() => setSettingsMsg(null), 3000)
     }
   }
+
   async function handleTextSave(key, value) {
     setTextSaving(key)
     try {
       await axios.patch(`/api/config/${key}`, { value })
-      setTextMsg({ type: 'success', text: 'Gespeichert ✓' })
+      setTextMsg({ type: 'success', text: t('admin.saved') })
     } catch {
-      setTextMsg({ type: 'error', text: 'Fehler beim Speichern.' })
+      setTextMsg({ type: 'error', text: t('admin.error_save') })
     } finally {
       setTextSaving(null)
       setTimeout(() => setTextMsg(null), 3000)
     }
   }
+
   async function handleLogoUpload(e) {
     const file = e.target.files[0]
     if (!file) return
@@ -423,34 +403,21 @@ function TabSystem({ t }) {
       })
       setLogoUrl(res.data.logo_url)
       invalidateLogoCache()
-      setLogoMsg({ type: 'success', text: 'Logo erfolgreich hochgeladen.' })
+      setLogoMsg({ type: 'success', text: t('admin.system_logo_success') })
     } catch (err) {
-      setLogoMsg({ type: 'error', text: err.response?.data?.detail || 'Fehler beim Hochladen.' })
+      setLogoMsg({ type: 'error', text: err.response?.data?.detail || t('admin.system_logo_error') })
     }
     setTimeout(() => setLogoMsg(null), 3000)
   }
 
-  if (!settings) return <div className="admin-loading">Lade Einstellungen…</div>
-
-  const rows = [
-    { key: 'system_app_name',  val: settings.app_name },
-    { key: 'system_app_url',   val: settings.app_url },
-    { key: 'system_app_env',   val: settings.app_env },
-    { key: 'system_smtp_host', val: settings.smtp_host },
-    { key: 'system_smtp_port', val: settings.smtp_port },
-    { key: 'system_smtp_user', val: settings.smtp_user },
-    { key: 'system_smtp_from', val: settings.smtp_from },
-    { key: 'system_imap_host', val: settings.imap_host },
-    { key: 'system_imap_port', val: settings.imap_port },
-    { key: 'system_imap_user', val: settings.imap_user },
-  ]
+  if (!settings) return <div className="admin-loading">{t('admin.loading_settings')}</div>
 
   return (
     <div className="admin-system">
 
-      {/* ── 1. Logo-Upload ── */}
+      {/* ── 1. Logo ── */}
       <div className="admin-logo-section glass">
-        <h3 className="admin-section-title" style={{marginTop:0}}>System-Logo</h3>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.system_logo_title')}</h3>
         <div className="admin-logo-preview">
           {logoUrl
             ? <img src={`${logoUrl}?t=${Date.now()}`} alt="Logo" className="admin-logo-img" />
@@ -460,47 +427,47 @@ function TabSystem({ t }) {
         <input type="file" ref={fileRef} accept="image/jpeg,image/png,image/webp,image/svg+xml"
           style={{ display: 'none' }} onChange={handleLogoUpload} />
         <button className="admin-btn-primary" onClick={() => fileRef.current?.click()}>
-          Logo hochladen
+          {t('admin.system_logo_upload')}
         </button>
-        <p className="admin-avatar-hint">JPEG, PNG, WebP oder SVG · max. 2MB</p>
+        <p className="admin-avatar-hint">{t('admin.system_logo_hint')}</p>
         {logoMsg && <p className={`profile-msg profile-msg--${logoMsg.type}`}>{logoMsg.text}</p>}
       </div>
 
       {/* ── 2. Betreiber-Daten ── */}
       <div className="admin-text-editor glass">
-        <h3 className="admin-section-title" style={{marginTop:0}}>Betreiber-Daten</h3>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.system_company_title')}</h3>
         <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>
-          Diese Daten können als Variablen in Datenschutzerklärung und Impressum verwendet werden:<br/>
+          {t('admin.system_company_hint')}<br/>
           <code style={{fontSize:'0.8rem'}}>{'{{company_name}}'}</code> · <code style={{fontSize:'0.8rem'}}>{'{{company_street}}'}</code> · <code style={{fontSize:'0.8rem'}}>{'{{company_zip}}'}</code> · <code style={{fontSize:'0.8rem'}}>{'{{company_email}}'}</code> · <code style={{fontSize:'0.8rem'}}>{'{{company_phone}}'}</code> · <code style={{fontSize:'0.8rem'}}>{'{{company_owner}}'}</code>
         </p>
         <div className="admin-email-grid">
           <div className="admin-email-field">
-            <label>Firmenname / Name</label>
+            <label>{t('admin.system_company_name')}</label>
             <input className="admin-filter-input" value={company.company_name}
               onChange={e => setCompany(c => ({...c, company_name: e.target.value}))} placeholder="Z-Evolutions" />
           </div>
           <div className="admin-email-field">
-            <label>Inhaber / Verantwortlicher</label>
+            <label>{t('admin.system_company_owner')}</label>
             <input className="admin-filter-input" value={company.company_owner}
               onChange={e => setCompany(c => ({...c, company_owner: e.target.value}))} placeholder="Max Mustermann" />
           </div>
           <div className="admin-email-field">
-            <label>Straße + Hausnummer</label>
+            <label>{t('admin.system_company_street')}</label>
             <input className="admin-filter-input" value={company.company_street}
               onChange={e => setCompany(c => ({...c, company_street: e.target.value}))} placeholder="Musterstraße 1" />
           </div>
           <div className="admin-email-field">
-            <label>PLZ + Ort</label>
+            <label>{t('admin.system_company_zip')}</label>
             <input className="admin-filter-input" value={company.company_zip}
               onChange={e => setCompany(c => ({...c, company_zip: e.target.value}))} placeholder="12345 Musterstadt" />
           </div>
           <div className="admin-email-field">
-            <label>E-Mail</label>
+            <label>{t('admin.system_company_email')}</label>
             <input className="admin-filter-input" value={company.company_email}
               onChange={e => setCompany(c => ({...c, company_email: e.target.value}))} placeholder="info@beispiel.de" />
           </div>
           <div className="admin-email-field">
-            <label>Telefon (optional)</label>
+            <label>{t('admin.system_company_phone')}</label>
             <input className="admin-filter-input" value={company.company_phone}
               onChange={e => setCompany(c => ({...c, company_phone: e.target.value}))} placeholder="+49 123 456789" />
           </div>
@@ -508,22 +475,22 @@ function TabSystem({ t }) {
         <div className="admin-text-footer" style={{marginTop:'1rem'}}>
           {companyMsg && <span className={`profile-msg profile-msg--${companyMsg.type}`}>{companyMsg.text}</span>}
           <button className="admin-btn-primary" onClick={handleCompanySave} disabled={companySaving}>
-            {companySaving ? 'Speichern…' : 'Betreiber-Daten speichern'}
+            {companySaving ? t('common.saving') : t('admin.system_company_save')}
           </button>
         </div>
       </div>
 
       {/* ── 3. Ticket-Einstellungen ── */}
       <div className="admin-text-editor glass">
-        <h3 className="admin-section-title" style={{marginTop:0}}>Ticket-Einstellungen</h3>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.system_tickets_title')}</h3>
         <div className="admin-email-grid">
           <div className="admin-email-field">
-            <label>Ticket-Sichtbarkeit für Agenten</label>
+            <label>{t('admin.system_visibility_label')}</label>
             <select className="admin-filter-input" value={ticketVisibility}
               onChange={e => setTicketVisibility(e.target.value)}>
-              <option value="all">Alle Tickets sehen</option>
-              <option value="own_and_unassigned">Eigene + nicht zugewiesene</option>
-              <option value="own_group">Nur eigene Gruppe</option>
+              <option value="all">{t('admin.system_visibility_all')}</option>
+              <option value="own_and_unassigned">{t('admin.system_visibility_own')}</option>
+              <option value="own_group">{t('admin.system_visibility_group')}</option>
             </select>
           </div>
         </div>
@@ -532,32 +499,32 @@ function TabSystem({ t }) {
             onClick={() => setShowGroupTiles(v => v === 'true' ? 'false' : 'true')}>
             <div className="admin-toggle__knob"/>
           </div>
-          <span>Gruppen-Kacheln im Dashboard anzeigen</span>
+          <span>{t('admin.system_group_tiles')}</span>
         </label>
         <div className="admin-text-footer" style={{marginTop:'1rem'}}>
           {settingsMsg && <span className={`profile-msg profile-msg--${settingsMsg.type}`}>{settingsMsg.text}</span>}
           <button className="admin-btn-primary" onClick={handleSettingsSave} disabled={settingsSaving}>
-            {settingsSaving ? 'Speichern…' : 'Einstellungen speichern'}
+            {settingsSaving ? t('common.saving') : t('admin.system_settings_save')}
           </button>
         </div>
       </div>
 
       {/* ── 4. App-Einstellungen ── */}
       <div className="admin-text-editor glass">
-        <h3 className="admin-section-title" style={{marginTop:0}}>App-Einstellungen</h3>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.system_app_title')}</h3>
         <div className="admin-email-grid">
           <div className="admin-email-field">
-            <label>App-Name</label>
+            <label>{t('admin.system_app_name')}</label>
             <input className="admin-filter-input" value={appName}
               onChange={e => setAppName(e.target.value)} placeholder="ZE-Ticket" />
           </div>
           <div className="admin-email-field">
-            <label>App-URL</label>
+            <label>{t('admin.system_app_url')}</label>
             <div style={{display:'flex', alignItems:'center', gap:'0.75rem'}}>
               <input className="admin-filter-input" value={settings?.app_url || ''} disabled
                 style={{opacity:0.6, cursor:'not-allowed', flex:1}} />
               <span className="admin-avatar-hint" style={{whiteSpace:'nowrap', color:'#f59e0b'}}>
-                ⚠ Nur per .env änderbar (SSL-kritisch)
+                {t('admin.system_url_hint')}
               </span>
             </div>
           </div>
@@ -565,15 +532,15 @@ function TabSystem({ t }) {
         <div className="admin-text-footer" style={{marginTop:'1rem'}}>
           {appNameMsg && <span className={`profile-msg profile-msg--${appNameMsg.type}`}>{appNameMsg.text}</span>}
           <button className="admin-btn-primary" onClick={handleAppNameSave} disabled={appNameSaving}>
-            {appNameSaving ? 'Speichern…' : 'App-Name speichern'}
+            {appNameSaving ? t('common.saving') : t('admin.system_appname_save')}
           </button>
         </div>
       </div>
 
       {/* ── 5. Datenschutzerklärung ── */}
       <div className="admin-text-editor glass">
-        <h3 className="admin-section-title" style={{marginTop:0}}>Datenschutzerklärung</h3>
-        <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>HTML-Format · Betreiber-Variablen werden automatisch ersetzt</p>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('privacy.title')}</h3>
+        <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>{t('admin.system_html_hint')}</p>
         <textarea className="admin-text-area" value={privacyText}
           onChange={e => setPrivacyText(e.target.value)} rows={12} spellCheck={false} />
         <div className="admin-text-footer">
@@ -581,52 +548,36 @@ function TabSystem({ t }) {
           <button className="admin-btn-primary"
             onClick={() => handleTextSave('privacy_text', privacyText)}
             disabled={textSaving === 'privacy_text'}>
-            {textSaving === 'privacy_text' ? 'Speichern…' : 'Speichern'}
+            {textSaving === 'privacy_text' ? t('common.saving') : t('common.save')}
           </button>
         </div>
       </div>
 
       {/* ── 6. Impressum ── */}
       <div className="admin-text-editor glass">
-        <h3 className="admin-section-title" style={{marginTop:0}}>Impressum</h3>
-        <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>HTML-Format · Betreiber-Variablen werden automatisch ersetzt</p>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('privacy.imprint_title')}</h3>
+        <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>{t('admin.system_html_hint')}</p>
         <textarea className="admin-text-area" value={imprintText}
           onChange={e => setImprintText(e.target.value)} rows={10} spellCheck={false} />
         <div className="admin-text-footer">
           <button className="admin-btn-primary"
             onClick={() => handleTextSave('imprint_text', imprintText)}
             disabled={textSaving === 'imprint_text'}>
-            {textSaving === 'imprint_text' ? 'Speichern…' : 'Speichern'}
+            {textSaving === 'imprint_text' ? t('common.saving') : t('common.save')}
           </button>
         </div>
       </div>
-
     </div>
   )
 }
 
 // ── Tab: Statistiken ───────────────────────────────────────────────────────────
-
-const WIDGET_LABELS = {
-  tickets_per_day:      'Tickets pro Tag (30 Tage)',
-  tickets_by_status:    'Tickets nach Status',
-  tickets_by_priority:  'Tickets nach Priorität',
-  avg_resolution:       'Ø Lösungszeit',
-  tickets_by_agent:     'Tickets pro Agent',
-  tickets_by_group:     'Tickets pro Gruppe',
-  sla_rate:             'SLA-Einhaltungsrate',
-  sla_breaches:         'SLA-Verletzungen (7 Tage)',
-  system_users:         'Benutzer & Kunden',
-  upload_storage:       'Speicherverbrauch Uploads',
-}
-
 const STATUS_COLORS = {
   neu:            '#00d4ff',
   in_bearbeitung: '#f59e0b',
   geloest:        '#22c55e',
   geschlossen:    '#6b7280',
 }
-
 const PRIO_COLORS = {
   niedrig:  '#6b7280',
   normal:   '#00d4ff',
@@ -634,20 +585,9 @@ const PRIO_COLORS = {
   kritisch: '#ef4444',
 }
 
-const STATUS_LABELS = {
-  neu: 'Neu', in_bearbeitung: 'In Bearbeitung',
-  geloest: 'Gelöst', geschlossen: 'Geschlossen',
-}
-
-const PRIO_LABELS = {
-  niedrig: 'Niedrig', normal: 'Normal',
-  hoch: 'Hoch', kritisch: 'Kritisch',
-}
-
-function GaugeChart({ value }) {
+function GaugeChart({ value, label }) {
   const r = 70, cx = 90, cy = 85
-  const startAngle = Math.PI, endAngle = 0
-  const angle = startAngle - (value / 100) * Math.PI
+  const angle = Math.PI - (value / 100) * Math.PI
   const x = cx + r * Math.cos(angle)
   const y = cy - r * Math.sin(angle)
   const color = value >= 90 ? '#22c55e' : value >= 70 ? '#f59e0b' : '#ef4444'
@@ -658,20 +598,22 @@ function GaugeChart({ value }) {
       <path d={bgArc} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="14" strokeLinecap="round"/>
       <path d={fgArc} fill="none" stroke={color} strokeWidth="14" strokeLinecap="round"/>
       <text x={cx} y={cy - 8} textAnchor="middle" fill={color} fontSize="22" fontWeight="bold">{value}%</text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fill="#9ca3af" fontSize="10">Einhaltung</text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fill="#9ca3af" fontSize="10">{label}</text>
     </svg>
   )
 }
 
 function TabStatistics({ t }) {
-  const [data, setData]         = useState(null)
-  const [stats, setStats]       = useState(null)
-  const [widgets, setWidgets]   = useState(() => {
+  const [data, setData]       = useState(null)
+  const [stats, setStats]     = useState(null)
+  const [widgets, setWidgets] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('ze_widgets') || 'null')
       if (saved) return saved
     } catch {}
-    return Object.fromEntries(Object.keys(WIDGET_LABELS).map(k => [k, true]))
+    const keys = ['tickets_per_day','tickets_by_status','tickets_by_priority','avg_resolution',
+                  'tickets_by_agent','tickets_by_group','sla_rate','sla_breaches','system_users','upload_storage']
+    return Object.fromEntries(keys.map(k => [k, true]))
   })
   const [configOpen, setConfigOpen] = useState(false)
 
@@ -688,32 +630,50 @@ function TabStatistics({ t }) {
     })
   }
 
-  if (!data || !stats) return <div className="admin-loading">Lade Statistiken…</div>
+  if (!data || !stats) return <div className="admin-loading">{t('admin.loading_stats')}</div>
+
+  const WIDGET_LABELS = {
+    tickets_per_day:      t('admin.widget_tickets_per_day'),
+    tickets_by_status:    t('admin.widget_tickets_by_status'),
+    tickets_by_priority:  t('admin.widget_tickets_by_priority'),
+    avg_resolution:       t('admin.widget_avg_resolution'),
+    tickets_by_agent:     t('admin.widget_tickets_by_agent'),
+    tickets_by_group:     t('admin.widget_tickets_by_group'),
+    sla_rate:             t('admin.widget_sla_rate'),
+    sla_breaches:         t('admin.widget_sla_breaches'),
+    system_users:         t('admin.widget_system_users'),
+    upload_storage:       t('admin.widget_upload_storage'),
+  }
+
+  const STATUS_LABELS = {
+    neu: t('tickets.status_neu'), in_bearbeitung: t('tickets.status_in_bearbeitung'),
+    geloest: t('tickets.status_geloest'), geschlossen: t('tickets.status_geschlossen'),
+  }
+  const PRIO_LABELS = {
+    niedrig: t('tickets.priority_niedrig'), normal: t('tickets.priority_normal'),
+    hoch: t('tickets.priority_hoch'), kritisch: t('tickets.priority_kritisch'),
+  }
 
   const activeWidgets = Object.keys(WIDGET_LABELS).filter(k => widgets[k])
+  const tooltipStyle = {background:'#0d1b3e',border:'1px solid #00d4ff33',borderRadius:'6px',fontSize:'12px'}
 
   return (
     <div className="admin-stats-tab">
-
-      {/* ── Toolbar ── */}
       <div className="admin-toolbar" style={{marginBottom:'1rem'}}>
-        <span className="admin-section-title" style={{margin:0}}>Dashboard-Statistiken</span>
+        <span className="admin-section-title" style={{margin:0}}>{t('admin.stats_dashboard_title')}</span>
         <button className="admin-btn-secondary" onClick={() => setConfigOpen(o => !o)}>
-          {configOpen ? 'Fertig' : '⚙ Widgets anpassen'}
+          {configOpen ? t('admin.stats_widgets_done') : t('admin.stats_widgets_config')}
         </button>
       </div>
 
-      {/* ── Widget-Auswahl ── */}
       {configOpen && (
         <div className="admin-widget-config glass">
-          <h4 className="admin-tpl-vars-title" style={{marginBottom:'0.75rem'}}>Angezeigte Widgets</h4>
+          <h4 className="admin-tpl-vars-title" style={{marginBottom:'0.75rem'}}>{t('admin.stats_widgets_title')}</h4>
           <div className="admin-widget-config-grid">
             {Object.entries(WIDGET_LABELS).map(([key, label]) => (
               <label key={key} className="admin-widget-toggle">
-                <div
-                  className={`admin-toggle ${widgets[key] ? 'admin-toggle--on' : ''}`}
-                  onClick={() => toggleWidget(key)}
-                ><div className="admin-toggle__knob"/></div>
+                <div className={`admin-toggle ${widgets[key] ? 'admin-toggle--on' : ''}`}
+                  onClick={() => toggleWidget(key)}><div className="admin-toggle__knob"/></div>
                 <span>{label}</span>
               </label>
             ))}
@@ -721,66 +681,56 @@ function TabStatistics({ t }) {
         </div>
       )}
 
-      {/* ── Widgets ── */}
       <div className="admin-widgets-grid">
-
-        {/* Tickets pro Tag */}
         {widgets.tickets_per_day && (
           <div className="admin-widget glass admin-widget--wide">
-            <h4 className="admin-widget-title">Tickets pro Tag (letzte 30 Tage)</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_tickets_per_day')}</h4>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={data.tickets_per_day}>
                 <XAxis dataKey="date" tick={{fontSize:10}} tickFormatter={d => d.slice(5)} stroke="#4a6080"/>
                 <YAxis tick={{fontSize:10}} stroke="#4a6080" allowDecimals={false}/>
-                <Tooltip contentStyle={{background:'#0d1b3e',border:'1px solid #00d4ff33',borderRadius:'6px',fontSize:'12px'}}/>
+                <Tooltip contentStyle={tooltipStyle}/>
                 <Line type="monotone" dataKey="tickets" stroke="#00d4ff" strokeWidth={2} dot={false}/>
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
 
-        {/* Tickets nach Status */}
         {widgets.tickets_by_status && (
           <div className="admin-widget glass">
-            <h4 className="admin-widget-title">Tickets nach Status</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_tickets_by_status')}</h4>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie data={data.tickets_by_status.map(d => ({...d, name: STATUS_LABELS[d.status] || d.status}))}
                   dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={35}>
-                  {data.tickets_by_status.map((d, i) => (
-                    <Cell key={i} fill={STATUS_COLORS[d.status] || '#6b7280'}/>
-                  ))}
+                  {data.tickets_by_status.map((d, i) => <Cell key={i} fill={STATUS_COLORS[d.status] || '#6b7280'}/>)}
                 </Pie>
-                <Tooltip contentStyle={{background:'#0d1b3e',border:'1px solid #00d4ff33',borderRadius:'6px',fontSize:'12px'}}/>
+                <Tooltip contentStyle={tooltipStyle}/>
                 <Legend iconSize={10} wrapperStyle={{fontSize:'11px'}}/>
               </PieChart>
             </ResponsiveContainer>
           </div>
         )}
 
-        {/* Tickets nach Priorität */}
         {widgets.tickets_by_priority && (
           <div className="admin-widget glass">
-            <h4 className="admin-widget-title">Tickets nach Priorität</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_tickets_by_priority')}</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={data.tickets_by_priority.map(d => ({...d, name: PRIO_LABELS[d.priority] || d.priority}))}>
                 <XAxis dataKey="name" tick={{fontSize:10}} stroke="#4a6080"/>
                 <YAxis tick={{fontSize:10}} stroke="#4a6080" allowDecimals={false}/>
-                <Tooltip contentStyle={{background:'#0d1b3e',border:'1px solid #00d4ff33',borderRadius:'6px',fontSize:'12px'}}/>
+                <Tooltip contentStyle={tooltipStyle}/>
                 <Bar dataKey="count" radius={[4,4,0,0]}>
-                  {data.tickets_by_priority.map((d, i) => (
-                    <Cell key={i} fill={PRIO_COLORS[d.priority] || '#00d4ff'}/>
-                  ))}
+                  {data.tickets_by_priority.map((d, i) => <Cell key={i} fill={PRIO_COLORS[d.priority] || '#00d4ff'}/>)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
 
-        {/* Ø Lösungszeit */}
         {widgets.avg_resolution && (
           <div className="admin-widget glass admin-widget--small">
-            <h4 className="admin-widget-title">Ø Lösungszeit</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_avg_resolution')}</h4>
             <div className="admin-widget-big-number" style={{color:'#00d4ff'}}>
               {data.avg_resolution_hours > 0
                 ? data.avg_resolution_hours >= 24
@@ -790,22 +740,21 @@ function TabStatistics({ t }) {
               }
             </div>
             <p className="admin-avatar-hint" style={{textAlign:'center'}}>
-              {data.avg_resolution_hours > 0 ? 'Durchschnitt (gelöste Tickets)' : 'Noch keine gelösten Tickets'}
+              {data.avg_resolution_hours > 0 ? t('admin.stats_avg_hint') : t('admin.stats_avg_none')}
             </p>
           </div>
         )}
 
-        {/* Tickets pro Agent */}
         {widgets.tickets_by_agent && (
           <div className="admin-widget glass admin-widget--wide">
-            <h4 className="admin-widget-title">Tickets pro Agent</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_tickets_by_agent')}</h4>
             {data.tickets_by_agent.length === 0
-              ? <p className="admin-empty">Keine zugewiesenen Tickets</p>
+              ? <p className="admin-empty">{t('admin.stats_no_assigned')}</p>
               : <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={data.tickets_by_agent} layout="vertical">
                     <XAxis type="number" tick={{fontSize:10}} stroke="#4a6080" allowDecimals={false}/>
                     <YAxis type="category" dataKey="agent" tick={{fontSize:10}} stroke="#4a6080" width={90}/>
-                    <Tooltip contentStyle={{background:'#0d1b3e',border:'1px solid #00d4ff33',borderRadius:'6px',fontSize:'12px'}}/>
+                    <Tooltip contentStyle={tooltipStyle}/>
                     <Bar dataKey="count" fill="#00d4ff" radius={[0,4,4,0]}/>
                   </BarChart>
                 </ResponsiveContainer>
@@ -813,17 +762,16 @@ function TabStatistics({ t }) {
           </div>
         )}
 
-        {/* Tickets pro Gruppe */}
         {widgets.tickets_by_group && (
           <div className="admin-widget glass">
-            <h4 className="admin-widget-title">Tickets pro Gruppe</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_tickets_by_group')}</h4>
             {data.tickets_by_group.length === 0
-              ? <p className="admin-empty">Keine zugewiesenen Tickets</p>
+              ? <p className="admin-empty">{t('admin.stats_no_assigned')}</p>
               : <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={data.tickets_by_group}>
                     <XAxis dataKey="group" tick={{fontSize:10}} stroke="#4a6080"/>
                     <YAxis tick={{fontSize:10}} stroke="#4a6080" allowDecimals={false}/>
-                    <Tooltip contentStyle={{background:'#0d1b3e',border:'1px solid #00d4ff33',borderRadius:'6px',fontSize:'12px'}}/>
+                    <Tooltip contentStyle={tooltipStyle}/>
                     <Bar dataKey="count" fill="#a78bfa" radius={[4,4,0,0]}/>
                   </BarChart>
                 </ResponsiveContainer>
@@ -831,25 +779,23 @@ function TabStatistics({ t }) {
           </div>
         )}
 
-        {/* SLA-Rate */}
         {widgets.sla_rate && (
           <div className="admin-widget glass admin-widget--small">
-            <h4 className="admin-widget-title">SLA-Einhaltungsrate</h4>
-            <GaugeChart value={data.sla_rate}/>
+            <h4 className="admin-widget-title">{t('admin.widget_sla_rate')}</h4>
+            <GaugeChart value={data.sla_rate} label={t('admin.stats_gauge_label')} />
           </div>
         )}
 
-        {/* SLA-Verletzungen */}
         {widgets.sla_breaches && (
           <div className="admin-widget glass">
-            <h4 className="admin-widget-title">SLA-Verletzungen (7 Tage)</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_sla_breaches')}</h4>
             {data.sla_breaches_per_day.length === 0
               ? <div className="admin-widget-big-number" style={{color:'#22c55e'}}>0 ✓</div>
               : <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={data.sla_breaches_per_day}>
                     <XAxis dataKey="date" tick={{fontSize:10}} tickFormatter={d => d.slice(5)} stroke="#4a6080"/>
                     <YAxis tick={{fontSize:10}} stroke="#4a6080" allowDecimals={false}/>
-                    <Tooltip contentStyle={{background:'#0d1b3e',border:'1px solid #00d4ff33',borderRadius:'6px',fontSize:'12px'}}/>
+                    <Tooltip contentStyle={tooltipStyle}/>
                     <Bar dataKey="violations" fill="#ef4444" radius={[4,4,0,0]}/>
                   </BarChart>
                 </ResponsiveContainer>
@@ -857,190 +803,157 @@ function TabStatistics({ t }) {
           </div>
         )}
 
-        {/* Benutzer & Kunden */}
         {widgets.system_users && (
           <div className="admin-widget glass admin-widget--small">
-            <h4 className="admin-widget-title">Benutzer & Kunden</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_system_users')}</h4>
             <div className="admin-widget-user-stats">
               <div>
                 <div className="admin-widget-big-number" style={{color:'#00d4ff'}}>{stats.users.agents}</div>
-                <div className="admin-avatar-hint">Agenten</div>
+                <div className="admin-avatar-hint">{t('admin.stats_agents')}</div>
               </div>
               <div className="admin-widget-divider"/>
               <div>
                 <div className="admin-widget-big-number" style={{color:'#a78bfa'}}>{stats.users.kunden}</div>
-                <div className="admin-avatar-hint">Kunden</div>
+                <div className="admin-avatar-hint">{t('admin.stats_kunden')}</div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Speicherverbrauch */}
         {widgets.upload_storage && (
           <div className="admin-widget glass admin-widget--small">
-            <h4 className="admin-widget-title">Speicherverbrauch Uploads</h4>
+            <h4 className="admin-widget-title">{t('admin.widget_upload_storage')}</h4>
             <div className="admin-widget-big-number" style={{color: data.upload_mb > 500 ? '#f59e0b' : '#22c55e'}}>
               {data.upload_mb} MB
             </div>
-            <p className="admin-avatar-hint" style={{textAlign:'center'}}>Anhänge & Avatare</p>
+            <p className="admin-avatar-hint" style={{textAlign:'center'}}>{t('admin.stats_storage_hint')}</p>
           </div>
         )}
 
         {activeWidgets.length === 0 && (
           <div className="admin-empty glass" style={{padding:'2rem',gridColumn:'1/-1',textAlign:'center'}}>
-            Keine Widgets aktiv — klicke auf "Widgets anpassen" um welche einzublenden.
+            {t('admin.stats_no_widgets')}
           </div>
         )}
-
       </div>
     </div>
   )
 }
 
 // ── Tab: Templates ─────────────────────────────────────────────────────────────
-const VAR_DESCRIPTIONS = {
-  app_name:            'Name der Anwendung (z.B. ZE-Ticket)',
-  app_url:             'URL des Systems (z.B. https://support.z-evolutions.de)',
-  display_name:        'Anzeigename des Empfängers',
-  to_name:             'Name des Empfängers (Kunde)',
-  role:                'Rolle des neuen Benutzers (z.B. Agent)',
-  onboarding_password: 'Temporäres Einmalpasswort für den ersten Login',
-  login_url:           'Direktlink zur Login-Seite',
-  reset_url:           'Direktlink zum Passwort-Reset-Formular',
-  expires_minutes:     'Gültigkeitsdauer des Reset-Links in Minuten',
-  ticket_number:       'Ticket-Nummer (z.B. ZE-2026-0042)',
-  ticket_subject:      'Betreff / Titel des Tickets',
-  agent_name:          'Anzeigename des antwortenden Agenten',
-  comment_body:        'Inhalt der Agenten-Antwort',
-  due_at:              'Fälligkeitsdatum der SLA (formatiert)',
+const TEMPLATE_KEYS = {
+  tpl_invitation:          'tpl_invitation',
+  tpl_password_reset:      'tpl_password_reset',
+  tpl_ticket_confirmation: 'tpl_ticket_confirmation',
+  tpl_comment_notification:'tpl_comment_notification',
+  tpl_sla_breach:          'tpl_sla_breach',
 }
 
-const TEMPLATE_META = {
-  tpl_invitation: {
-    label: 'Einladungsmail',
-    vars: ['app_name','display_name','role','onboarding_password','login_url'],
-  },
-  tpl_password_reset: {
-    label: 'Passwort-Reset',
-    vars: ['app_name','display_name','reset_url','expires_minutes'],
-  },
-  tpl_ticket_confirmation: {
-    label: 'Ticket-Bestätigung',
-    vars: ['app_name','app_url','to_name','ticket_number','ticket_subject'],
-  },
-  tpl_comment_notification: {
-    label: 'Neue Antwort (Agent)',
-    vars: ['app_name','app_url','to_name','ticket_number','ticket_subject','agent_name','comment_body'],
-  },
-  tpl_sla_breach: {
-    label: 'SLA-Eskalation',
-    vars: ['app_name','app_url','display_name','ticket_number','ticket_subject','due_at'],
-  },
+const TEMPLATE_VARS = {
+  tpl_invitation:           ['app_name','display_name','role','onboarding_password','login_url'],
+  tpl_password_reset:       ['app_name','display_name','reset_url','expires_minutes'],
+  tpl_ticket_confirmation:  ['app_name','app_url','to_name','ticket_number','ticket_subject'],
+  tpl_comment_notification: ['app_name','app_url','to_name','ticket_number','ticket_subject','agent_name','comment_body'],
+  tpl_sla_breach:           ['app_name','app_url','display_name','ticket_number','ticket_subject','due_at'],
 }
 
 function TabTemplates({ t }) {
-  const [templates, setTemplates]   = useState({})
-  const [active, setActive]         = useState('tpl_invitation')
-  const [code, setCode]             = useState('')
-  const [preview, setPreview]       = useState(false)
-  const [saving, setSaving]         = useState(false)
-  const [resetting, setResetting]   = useState(false)
-  const [msg, setMsg]               = useState(null)
-  const textareaRef                 = useRef(null)
+  const [templates, setTemplates] = useState({})
+  const [active, setActive]       = useState('tpl_invitation')
+  const [code, setCode]           = useState('')
+  const [preview, setPreview]     = useState(false)
+  const [saving, setSaving]       = useState(false)
+  const [resetting, setResetting] = useState(false)
+  const [msg, setMsg]             = useState(null)
+  const textareaRef               = useRef(null)
 
   useEffect(() => {
     axios.get('/api/admin/templates').then(r => {
-      setTemplates(r.data)
-      setCode(r.data[active] || '')
+      setTemplates(r.data); setCode(r.data[active] || '')
     }).catch(() => {})
   }, [])
 
   useEffect(() => {
-    setCode(templates[active] || '')
-    setPreview(false)
-    setMsg(null)
+    setCode(templates[active] || ''); setPreview(false); setMsg(null)
   }, [active])
 
   function insertVar(varName) {
     const ta = textareaRef.current
     if (!ta) return
-    const start = ta.selectionStart
-    const end   = ta.selectionEnd
-    const ins   = `{{${varName}}}`
-    const next  = code.slice(0, start) + ins + code.slice(end)
+    const start = ta.selectionStart, end = ta.selectionEnd
+    const ins = `{{${varName}}}`
+    const next = code.slice(0, start) + ins + code.slice(end)
     setCode(next)
-    setTimeout(() => {
-      ta.selectionStart = ta.selectionEnd = start + ins.length
-      ta.focus()
-    }, 0)
+    setTimeout(() => { ta.selectionStart = ta.selectionEnd = start + ins.length; ta.focus() }, 0)
   }
 
   async function handleSave() {
-    setSaving(true)
-    setMsg(null)
+    setSaving(true); setMsg(null)
     try {
       await axios.patch(`/api/admin/templates/${active}`, { value: code })
       setTemplates(t => ({ ...t, [active]: code }))
-      setMsg({ type: 'success', text: 'Template gespeichert ✓' })
+      setMsg({ type: 'success', text: t('admin.tpl_saved') })
     } catch (e) {
-      setMsg({ type: 'error', text: e.response?.data?.detail || 'Fehler beim Speichern.' })
-    } finally {
-      setSaving(false)
-      setTimeout(() => setMsg(null), 4000)
-    }
+      setMsg({ type: 'error', text: e.response?.data?.detail || t('admin.error_save') })
+    } finally { setSaving(false); setTimeout(() => setMsg(null), 4000) }
   }
 
   async function handleReset() {
-    if (!confirm('Template auf Standard zurücksetzen? Alle Änderungen gehen verloren.')) return
+    if (!confirm(t('admin.tpl_reset_confirm'))) return
     setResetting(true)
     try {
       await axios.post(`/api/admin/templates/${active}/reset`)
       const r = await axios.get('/api/admin/templates')
-      setTemplates(r.data)
-      setCode(r.data[active] || '')
-      setMsg({ type: 'success', text: 'Template zurückgesetzt ✓' })
-    } catch (e) {
-      setMsg({ type: 'error', text: 'Fehler beim Zurücksetzen.' })
-    } finally {
-      setResetting(false)
-      setTimeout(() => setMsg(null), 4000)
-    }
+      setTemplates(r.data); setCode(r.data[active] || '')
+      setMsg({ type: 'success', text: t('admin.tpl_reset_ok') })
+    } catch {
+      setMsg({ type: 'error', text: t('admin.tpl_reset_error') })
+    } finally { setResetting(false); setTimeout(() => setMsg(null), 4000) }
   }
 
-  const meta = TEMPLATE_META[active] || { label: active, vars: [] }
+  const vars = TEMPLATE_VARS[active] || []
+
+  const VAR_DESC_KEYS = {
+    app_name:            'admin.var_app_name',
+    app_url:             'admin.var_app_url',
+    display_name:        'admin.var_display_name',
+    to_name:             'admin.var_to_name',
+    role:                'admin.var_role',
+    onboarding_password: 'admin.var_onboarding_password',
+    login_url:           'admin.var_login_url',
+    reset_url:           'admin.var_reset_url',
+    expires_minutes:     'admin.var_expires_minutes',
+    ticket_number:       'admin.var_ticket_number',
+    ticket_subject:      'admin.var_ticket_subject',
+    agent_name:          'admin.var_agent_name',
+    comment_body:        'admin.var_comment_body',
+    due_at:              'admin.var_due_at',
+  }
 
   return (
     <div className="admin-tpl">
-
-      {/* ── Template-Auswahl ── */}
       <div className="admin-tpl-tabs glass">
-        {Object.entries(TEMPLATE_META).map(([key, m]) => (
-          <button
-            key={key}
+        {Object.keys(TEMPLATE_KEYS).map(key => (
+          <button key={key}
             className={`admin-tpl-tab ${active === key ? 'admin-tpl-tab--active' : ''}`}
-            onClick={() => setActive(key)}
-          >{m.label}</button>
+            onClick={() => setActive(key)}>
+            {t(`admin.tpl_${key}`)}
+          </button>
         ))}
       </div>
 
       <div className="admin-tpl-body">
-
-        {/* ── Variablen-Helfer ── */}
         <div className="admin-tpl-vars glass">
-          <h4 className="admin-tpl-vars-title">Verfügbare Variablen</h4>
-          <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>
-            Klicken um an Cursor-Position einzufügen
-          </p>
+          <h4 className="admin-tpl-vars-title">{t('admin.tpl_vars_title')}</h4>
+          <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>{t('admin.tpl_vars_hint')}</p>
           <div className="admin-tpl-vars-list">
-            {meta.vars.map(v => (
+            {vars.map(v => (
               <div key={v} className="admin-tpl-var-item">
-                <button className="admin-tpl-var-btn" onClick={() => insertVar(v)}>
-                  {`{{${v}}}`}
-                </button>
-                {VAR_DESCRIPTIONS[v] && (
+                <button className="admin-tpl-var-btn" onClick={() => insertVar(v)}>{`{{${v}}}`}</button>
+                {VAR_DESC_KEYS[v] && (
                   <div className="admin-tpl-var-tooltip-wrap">
                     <span className="admin-tpl-var-hint">?</span>
-                    <div className="admin-tpl-var-tooltip">{VAR_DESCRIPTIONS[v]}</div>
+                    <div className="admin-tpl-var-tooltip">{t(VAR_DESC_KEYS[v])}</div>
                   </div>
                 )}
               </div>
@@ -1048,33 +961,23 @@ function TabTemplates({ t }) {
           </div>
         </div>
 
-        {/* ── Editor / Vorschau ── */}
         <div className="admin-tpl-editor glass">
           <div className="admin-tpl-editor-header">
-            <span className="admin-tpl-editor-title">{meta.label}</span>
+            <span className="admin-tpl-editor-title">{t(`admin.tpl_${active}`)}</span>
             <div className="admin-tpl-editor-actions">
-              <button
-                className={`admin-btn-secondary ${preview ? 'admin-btn-secondary--active' : ''}`}
-                onClick={() => setPreview(p => !p)}
-              >{preview ? 'HTML-Editor' : 'Vorschau'}</button>
+              <button className={`admin-btn-secondary ${preview ? 'admin-btn-secondary--active' : ''}`}
+                onClick={() => setPreview(p => !p)}>
+                {preview ? t('admin.tpl_preview_off') : t('admin.tpl_preview_on')}
+              </button>
             </div>
           </div>
 
           {preview ? (
-            <iframe
-              className="admin-tpl-preview"
-              srcDoc={code}
-              title="Template-Vorschau"
-              sandbox="allow-same-origin"
-            />
+            <iframe className="admin-tpl-preview" srcDoc={code}
+              title="Template-Vorschau" sandbox="allow-same-origin"/>
           ) : (
-            <textarea
-              ref={textareaRef}
-              className="admin-tpl-textarea"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              spellCheck={false}
-            />
+            <textarea ref={textareaRef} className="admin-tpl-textarea"
+              value={code} onChange={e => setCode(e.target.value)} spellCheck={false}/>
           )}
 
           <div className="admin-tpl-footer">
@@ -1083,15 +986,14 @@ function TabTemplates({ t }) {
             </div>
             <div className="admin-tpl-footer-right">
               <button className="admin-btn-secondary" onClick={handleReset} disabled={resetting}>
-                {resetting ? 'Zurücksetzen…' : 'Standard wiederherstellen'}
+                {resetting ? t('admin.tpl_resetting') : t('admin.tpl_reset')}
               </button>
               <button className="admin-btn-primary" onClick={handleSave} disabled={saving}>
-                {saving ? 'Speichern…' : 'Template speichern'}
+                {saving ? t('admin.tpl_saving') : t('admin.tpl_save')}
               </button>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   )
@@ -1107,45 +1009,31 @@ function TabBackup({ t }) {
     sftp_host: '', sftp_port: '22', sftp_user: '', sftp_password: '', sftp_path: '/backups',
     s3_endpoint: '', s3_bucket: '', s3_region: 'auto', s3_access_key: '', s3_secret_key: '', s3_path: 'backups',
   }
-  const [form, setForm]       = useState(EMPTY)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving]   = useState(false)
-  const [running, setRunning] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [msg, setMsg]         = useState(null)
-  const [runResult, setRunResult] = useState(null)
-  const [restoreFile, setRestoreFile]       = useState(null)
-  const [restoreDb, setRestoreDb]           = useState(true)
+  const [form, setForm]         = useState(EMPTY)
+  const [loading, setLoading]   = useState(true)
+  const [saving, setSaving]     = useState(false)
+  const [running, setRunning]   = useState(false)
+  const [testing, setTesting]   = useState(false)
+  const [msg, setMsg]           = useState(null)
+  const [runResult, setRunResult]       = useState(null)
+  const [restoreFile, setRestoreFile]   = useState(null)
+  const [restoreDb, setRestoreDb]       = useState(true)
   const [restoreUploads, setRestoreUploads] = useState(true)
-  const [restoring, setRestoring]           = useState(false)
+  const [restoring, setRestoring]       = useState(false)
   const [restoreResult, setRestoreResult]   = useState(null)
 
   useEffect(() => {
     axios.get('/api/admin/backup-config').then(r => {
       const d = r.data
       setForm({
-        enabled:         d.general.enabled,
-        target:          d.general.target,
-        schedule_hour:   d.general.schedule_hour,
-        retention_days:  d.general.retention_days,
-        retention_min:   d.general.retention_min,
-        include_uploads: d.general.include_uploads,
-        local_path:      d.local.path,
-        webdav_url:      d.webdav.url,
-        webdav_user:     d.webdav.user,
-        webdav_password: '',
-        webdav_path:     d.webdav.path,
-        sftp_host:       d.sftp.host,
-        sftp_port:       d.sftp.port,
-        sftp_user:       d.sftp.user,
-        sftp_password:   '',
-        sftp_path:       d.sftp.path,
-        s3_endpoint:     d.s3.endpoint,
-        s3_bucket:       d.s3.bucket,
-        s3_region:       d.s3.region,
-        s3_access_key:   d.s3.access_key,
-        s3_secret_key:   '',
-        s3_path:         d.s3.path,
+        enabled: d.general.enabled, target: d.general.target,
+        schedule_hour: d.general.schedule_hour, retention_days: d.general.retention_days,
+        retention_min: d.general.retention_min, include_uploads: d.general.include_uploads,
+        local_path: d.local.path,
+        webdav_url: d.webdav.url, webdav_user: d.webdav.user, webdav_password: '', webdav_path: d.webdav.path,
+        sftp_host: d.sftp.host, sftp_port: d.sftp.port, sftp_user: d.sftp.user, sftp_password: '', sftp_path: d.sftp.path,
+        s3_endpoint: d.s3.endpoint, s3_bucket: d.s3.bucket, s3_region: d.s3.region,
+        s3_access_key: d.s3.access_key, s3_secret_key: '', s3_path: d.s3.path,
       })
       setLoading(false)
     }).catch(() => setLoading(false))
@@ -1153,10 +1041,7 @@ function TabBackup({ t }) {
 
   function set(key, val) { setForm(f => ({ ...f, [key]: val })) }
 
-  const showMsg = (type, text) => {
-    setMsg({ type, text })
-    setTimeout(() => setMsg(null), 5000)
-  }
+  const showMsg = (type, text) => { setMsg({ type, text }); setTimeout(() => setMsg(null), 5000) }
 
   async function handleSave() {
     setSaving(true)
@@ -1166,9 +1051,9 @@ function TabBackup({ t }) {
       if (!payload.sftp_password)   delete payload.sftp_password
       if (!payload.s3_secret_key)   delete payload.s3_secret_key
       await axios.patch('/api/admin/backup-config', payload)
-      showMsg('success', 'Konfiguration gespeichert ✓')
+      showMsg('success', t('admin.backup_saved'))
     } catch (e) {
-      showMsg('error', e.response?.data?.detail || 'Fehler beim Speichern.')
+      showMsg('error', e.response?.data?.detail || t('admin.error_save'))
     } finally { setSaving(false) }
   }
 
@@ -1178,26 +1063,24 @@ function TabBackup({ t }) {
       const r = await axios.post('/api/admin/backup/test')
       showMsg('success', r.data.detail)
     } catch (e) {
-      showMsg('error', e.response?.data?.detail || 'Verbindungstest fehlgeschlagen.')
+      showMsg('error', e.response?.data?.detail || t('admin.backup_test_error'))
     } finally { setTesting(false) }
   }
 
   async function handleRunNow() {
-    setRunning(true)
-    setRunResult(null)
+    setRunning(true); setRunResult(null)
     try {
       const r = await axios.post('/api/admin/backup/run')
       setRunResult({ type: 'success', data: r.data })
     } catch (e) {
-      setRunResult({ type: 'error', data: { error: e.response?.data?.detail || 'Backup fehlgeschlagen.' } })
+      setRunResult({ type: 'error', data: { error: e.response?.data?.detail || t('admin.backup_run_error') } })
     } finally { setRunning(false) }
   }
 
   async function handleRestore() {
     if (!restoreFile) return
-    if (!confirm('⚠️ Achtung! Bestehende Daten werden überschrieben. Wirklich fortfahren?')) return
-    setRestoring(true)
-    setRestoreResult(null)
+    if (!confirm(t('admin.backup_restore_confirm'))) return
+    setRestoring(true); setRestoreResult(null)
     try {
       const formData = new FormData()
       formData.append('file', restoreFile)
@@ -1208,30 +1091,11 @@ function TabBackup({ t }) {
       })
       setRestoreResult({ type: 'success', data: r.data })
     } catch (e) {
-      setRestoreResult({ type: 'error', data: { error: e.response?.data?.detail || 'Fehler beim Wiederherstellen.' } })
+      setRestoreResult({ type: 'error', data: { error: e.response?.data?.detail || t('admin.backup_restore_error') } })
     } finally { setRestoring(false) }
   }
 
-  async function handleRestore() {
-    if (!restoreFile) return
-    if (!confirm('⚠️ Achtung! Bestehende Daten werden überschrieben. Wirklich fortfahren?')) return
-    setRestoring(true)
-    setRestoreResult(null)
-    try {
-      const formData = new FormData()
-      formData.append('file', restoreFile)
-      formData.append('restore_db', restoreDb ? 'true' : 'false')
-      formData.append('restore_uploads', restoreUploads ? 'true' : 'false')
-      const r = await axios.post('/api/admin/backup/restore', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      setRestoreResult({ type: 'success', data: r.data })
-    } catch (e) {
-      setRestoreResult({ type: 'error', data: { error: e.response?.data?.detail || 'Fehler beim Wiederherstellen.' } })
-    } finally { setRestoring(false) }
-  }
-
-  if (loading) return <div className="admin-loading">Lade Backup-Konfiguration…</div>
+  if (loading) return <div className="admin-loading">{t('admin.backup_loading')}</div>
 
   const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
@@ -1240,63 +1104,57 @@ function TabBackup({ t }) {
 
       {/* ── Allgemein ── */}
       <div className="admin-email-section glass">
-        <h3 className="admin-section-title" style={{ marginTop: 0 }}>Allgemein</h3>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.backup_general_title')}</h3>
         <label className="admin-email-toggle" style={{marginBottom:'1rem'}}>
           <div className={`admin-toggle ${form.enabled === 'true' ? 'admin-toggle--on' : ''}`}
             onClick={() => set('enabled', form.enabled === 'true' ? 'false' : 'true')}>
             <div className="admin-toggle__knob"/>
           </div>
-          <span>Automatisches Backup {form.enabled === 'true' ? 'aktiviert' : 'deaktiviert'}</span>
+          <span>{form.enabled === 'true' ? t('admin.backup_enabled') : t('admin.backup_disabled')}</span>
         </label>
-
         <div className="admin-email-grid">
           <div className="admin-email-field">
-            <label>Backup-Ziel</label>
-            <select className="admin-filter-input" value={form.target}
-              onChange={e => set('target', e.target.value)}>
-              <option value="local">Lokal (auf dem Server)</option>
-              <option value="webdav">WebDAV (Nextcloud, ownCloud, HiDrive)</option>
-              <option value="sftp">SFTP (NAS, eigener Server)</option>
-              <option value="s3">S3-kompatibel (Hetzner, Backblaze, AWS)</option>
+            <label>{t('admin.backup_target_label')}</label>
+            <select className="admin-filter-input" value={form.target} onChange={e => set('target', e.target.value)}>
+              <option value="local">{t('admin.backup_target_local')}</option>
+              <option value="webdav">{t('admin.backup_target_webdav')}</option>
+              <option value="sftp">{t('admin.backup_target_sftp')}</option>
+              <option value="s3">{t('admin.backup_target_s3')}</option>
             </select>
           </div>
           <div className="admin-email-field">
-            <label>Uhrzeit (UTC)</label>
-            <select className="admin-filter-input" value={form.schedule_hour}
-              onChange={e => set('schedule_hour', e.target.value)}>
-              {HOURS.map(h => (
-                <option key={h} value={String(h)}>{String(h).padStart(2,'0')}:00 Uhr</option>
-              ))}
+            <label>{t('admin.backup_schedule_label')}</label>
+            <select className="admin-filter-input" value={form.schedule_hour} onChange={e => set('schedule_hour', e.target.value)}>
+              {HOURS.map(h => <option key={h} value={String(h)}>{String(h).padStart(2,'0')}:00 Uhr</option>)}
             </select>
           </div>
           <div className="admin-email-field">
-            <label>Aufbewahrung (Tage)</label>
+            <label>{t('admin.backup_retention_days')}</label>
             <input className="admin-filter-input" type="number" min="1" max="365"
               value={form.retention_days} onChange={e => set('retention_days', e.target.value)}/>
           </div>
           <div className="admin-email-field">
-            <label>Mindestanzahl Backups</label>
+            <label>{t('admin.backup_retention_min')}</label>
             <input className="admin-filter-input" type="number" min="1" max="100"
               value={form.retention_min} onChange={e => set('retention_min', e.target.value)}/>
           </div>
         </div>
-
         <label className="admin-email-toggle" style={{marginTop:'0.75rem'}}>
           <div className={`admin-toggle ${form.include_uploads === 'true' ? 'admin-toggle--on' : ''}`}
             onClick={() => set('include_uploads', form.include_uploads === 'true' ? 'false' : 'true')}>
             <div className="admin-toggle__knob"/>
           </div>
-          <span>Uploads (Anhänge & Avatare) einschließen</span>
+          <span>{t('admin.backup_include_uploads')}</span>
         </label>
       </div>
 
-      {/* ── Ziel-spezifische Einstellungen ── */}
+      {/* ── Ziel-spezifisch ── */}
       {form.target === 'local' && (
         <div className="admin-email-section glass">
-          <h3 className="admin-section-title" style={{ marginTop: 0 }}>Lokaler Speicherpfad</h3>
+          <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.backup_local_title')}</h3>
           <div className="admin-email-grid">
             <div className="admin-email-field" style={{gridColumn:'1/-1'}}>
-              <label>Pfad auf dem Server</label>
+              <label>{t('admin.backup_local_path')}</label>
               <input className="admin-filter-input" value={form.local_path}
                 onChange={e => set('local_path', e.target.value)} placeholder="/app/backups"/>
             </div>
@@ -1306,26 +1164,25 @@ function TabBackup({ t }) {
 
       {form.target === 'webdav' && (
         <div className="admin-email-section glass">
-          <h3 className="admin-section-title" style={{ marginTop: 0 }}>WebDAV-Konfiguration</h3>
+          <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.backup_webdav_title')}</h3>
           <div className="admin-email-grid">
             <div className="admin-email-field" style={{gridColumn:'1/-1'}}>
-              <label>Server-URL</label>
+              <label>{t('admin.backup_webdav_url')}</label>
               <input className="admin-filter-input" value={form.webdav_url}
                 onChange={e => set('webdav_url', e.target.value)}
                 placeholder="https://nextcloud.beispiel.de/remote.php/dav/files/user"/>
             </div>
             <div className="admin-email-field">
-              <label>Benutzername</label>
-              <input className="admin-filter-input" value={form.webdav_user}
-                onChange={e => set('webdav_user', e.target.value)}/>
+              <label>{t('admin.backup_username')}</label>
+              <input className="admin-filter-input" value={form.webdav_user} onChange={e => set('webdav_user', e.target.value)}/>
             </div>
             <div className="admin-email-field">
-              <label>Passwort <span className="admin-avatar-hint">(leer = unverändert)</span></label>
+              <label>{t('admin.backup_password_hint')}</label>
               <input className="admin-filter-input" type="password" value={form.webdav_password}
                 onChange={e => set('webdav_password', e.target.value)} placeholder="••••••••"/>
             </div>
             <div className="admin-email-field">
-              <label>Remote-Pfad</label>
+              <label>{t('admin.backup_remote_path')}</label>
               <input className="admin-filter-input" value={form.webdav_path}
                 onChange={e => set('webdav_path', e.target.value)} placeholder="/backups"/>
             </div>
@@ -1335,30 +1192,29 @@ function TabBackup({ t }) {
 
       {form.target === 'sftp' && (
         <div className="admin-email-section glass">
-          <h3 className="admin-section-title" style={{ marginTop: 0 }}>SFTP-Konfiguration</h3>
+          <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.backup_sftp_title')}</h3>
           <div className="admin-email-grid">
             <div className="admin-email-field">
-              <label>Host</label>
+              <label>{t('admin.backup_host')}</label>
               <input className="admin-filter-input" value={form.sftp_host}
                 onChange={e => set('sftp_host', e.target.value)} placeholder="nas.beispiel.de"/>
             </div>
             <div className="admin-email-field">
-              <label>Port</label>
+              <label>{t('admin.backup_port')}</label>
               <input className="admin-filter-input" value={form.sftp_port}
                 onChange={e => set('sftp_port', e.target.value)} placeholder="22"/>
             </div>
             <div className="admin-email-field">
-              <label>Benutzername</label>
-              <input className="admin-filter-input" value={form.sftp_user}
-                onChange={e => set('sftp_user', e.target.value)}/>
+              <label>{t('admin.backup_username')}</label>
+              <input className="admin-filter-input" value={form.sftp_user} onChange={e => set('sftp_user', e.target.value)}/>
             </div>
             <div className="admin-email-field">
-              <label>Passwort <span className="admin-avatar-hint">(leer = unverändert)</span></label>
+              <label>{t('admin.backup_password_hint')}</label>
               <input className="admin-filter-input" type="password" value={form.sftp_password}
                 onChange={e => set('sftp_password', e.target.value)} placeholder="••••••••"/>
             </div>
             <div className="admin-email-field">
-              <label>Remote-Pfad</label>
+              <label>{t('admin.backup_remote_path')}</label>
               <input className="admin-filter-input" value={form.sftp_path}
                 onChange={e => set('sftp_path', e.target.value)} placeholder="/backups"/>
             </div>
@@ -1368,39 +1224,36 @@ function TabBackup({ t }) {
 
       {form.target === 's3' && (
         <div className="admin-email-section glass">
-          <h3 className="admin-section-title" style={{ marginTop: 0 }}>S3-Konfiguration</h3>
-          <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>
-            Kompatibel mit Hetzner Object Storage, Backblaze B2, AWS S3 und anderen S3-kompatiblen Diensten.
-          </p>
+          <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.backup_s3_title')}</h3>
+          <p className="admin-avatar-hint" style={{marginBottom:'0.75rem'}}>{t('admin.backup_s3_hint')}</p>
           <div className="admin-email-grid">
             <div className="admin-email-field" style={{gridColumn:'1/-1'}}>
-              <label>Endpoint-URL <span className="admin-avatar-hint">(leer für AWS S3)</span></label>
+              <label>{t('admin.backup_s3_endpoint')}</label>
               <input className="admin-filter-input" value={form.s3_endpoint}
                 onChange={e => set('s3_endpoint', e.target.value)}
                 placeholder="https://fsn1.your-objectstorage.com"/>
             </div>
             <div className="admin-email-field">
-              <label>Bucket-Name</label>
+              <label>{t('admin.backup_s3_bucket')}</label>
               <input className="admin-filter-input" value={form.s3_bucket}
                 onChange={e => set('s3_bucket', e.target.value)} placeholder="ze-ticket-backups"/>
             </div>
             <div className="admin-email-field">
-              <label>Region</label>
+              <label>{t('admin.backup_s3_region')}</label>
               <input className="admin-filter-input" value={form.s3_region}
                 onChange={e => set('s3_region', e.target.value)} placeholder="auto"/>
             </div>
             <div className="admin-email-field">
-              <label>Access Key</label>
-              <input className="admin-filter-input" value={form.s3_access_key}
-                onChange={e => set('s3_access_key', e.target.value)}/>
+              <label>{t('admin.backup_s3_access_key')}</label>
+              <input className="admin-filter-input" value={form.s3_access_key} onChange={e => set('s3_access_key', e.target.value)}/>
             </div>
             <div className="admin-email-field">
-              <label>Secret Key <span className="admin-avatar-hint">(leer = unverändert)</span></label>
+              <label>{t('admin.backup_password_hint')}</label>
               <input className="admin-filter-input" type="password" value={form.s3_secret_key}
                 onChange={e => set('s3_secret_key', e.target.value)} placeholder="••••••••"/>
             </div>
             <div className="admin-email-field">
-              <label>Pfad / Prefix</label>
+              <label>{t('admin.backup_s3_path')}</label>
               <input className="admin-filter-input" value={form.s3_path}
                 onChange={e => set('s3_path', e.target.value)} placeholder="backups"/>
             </div>
@@ -1410,13 +1263,13 @@ function TabBackup({ t }) {
 
       {/* ── Aktionen ── */}
       <div className="admin-email-section glass">
-        <h3 className="admin-section-title" style={{ marginTop: 0 }}>Aktionen</h3>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.backup_actions_title')}</h3>
         <div className="admin-email-actions" style={{flexWrap:'wrap', gap:'0.75rem'}}>
           <button className="admin-btn-secondary" onClick={handleTest} disabled={testing}>
-            {testing ? 'Teste…' : '🔌 Verbindung testen'}
+            {testing ? t('admin.backup_testing') : t('admin.backup_test_btn')}
           </button>
           <button className="admin-btn-secondary" onClick={handleRunNow} disabled={running}>
-            {running ? 'Backup läuft…' : '▶ Backup jetzt ausführen'}
+            {running ? t('admin.backup_running') : t('admin.backup_run_btn')}
           </button>
           {msg && <span className={`admin-email-msg admin-email-msg--${msg.type}`}>{msg.text}</span>}
         </div>
@@ -1425,14 +1278,14 @@ function TabBackup({ t }) {
           <div className={`admin-backup-result admin-backup-result--${runResult.type}`}>
             {runResult.type === 'success' ? (
               <>
-                <strong>✅ Backup erfolgreich</strong>
-                <span>Datei: {runResult.data.filename}</span>
-                <span>Größe: {runResult.data.size_mb} MB</span>
-                <span>Dauer: {runResult.data.duration}s</span>
-                {runResult.data.deleted > 0 && <span>{runResult.data.deleted} alte Backup(s) gelöscht</span>}
+                <strong>{t('admin.backup_run_success')}</strong>
+                <span>{t('admin.backup_run_file')}: {runResult.data.filename}</span>
+                <span>{t('admin.backup_run_size')}: {runResult.data.size_mb} MB</span>
+                <span>{t('admin.backup_run_duration')}: {runResult.data.duration}s</span>
+                {runResult.data.deleted > 0 && <span>{runResult.data.deleted} {t('admin.backup_run_deleted')}</span>}
               </>
             ) : (
-              <><strong>❌ Fehler:</strong> <span>{runResult.data.error}</span></>
+              <><strong>{t('admin.backup_run_fail')}</strong> <span>{runResult.data.error}</span></>
             )}
           </div>
         )}
@@ -1442,76 +1295,61 @@ function TabBackup({ t }) {
       <div className="admin-backup-warning glass">
         <span className="admin-backup-warning-icon">⚠️</span>
         <div>
-          <strong>Wichtig: Die .env-Datei ist nicht im Backup enthalten!</strong>
-          <p>Die .env-Datei enthält sensible Zugangsdaten (Datenbankpasswörter, SECRET_KEY) und wird aus Sicherheitsgründen nicht gesichert. Bitte bewahren Sie diese Datei separat auf — z.B. in einem Passwortmanager. Ohne die .env kann das System nach einem Totalausfall nicht wiederhergestellt werden.</p>
+          <strong>{t('admin.backup_env_title')}</strong>
+          <p>{t('admin.backup_env_text')}</p>
         </div>
       </div>
 
       {/* ── Restore ── */}
       <div className="admin-email-section glass">
-        <h3 className="admin-section-title" style={{ marginTop: 0 }}>Backup wiederherstellen</h3>
-        <p className="admin-avatar-hint" style={{marginBottom:'1rem'}}>
-          Nur Superadmins können Backups einspielen. Bestehende Daten werden überschrieben.
-        </p>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.backup_restore_title')}</h3>
+        <p className="admin-avatar-hint" style={{marginBottom:'1rem'}}>{t('admin.backup_restore_hint')}</p>
         <div className="admin-email-grid">
           <div className="admin-email-field" style={{gridColumn:'1/-1'}}>
-            <label>Backup-Datei (.tar.gz)</label>
-            <input type="file" accept=".tar.gz"
-              className="admin-filter-input"
+            <label>{t('admin.backup_restore_file')}</label>
+            <input type="file" accept=".tar.gz" className="admin-filter-input"
               onChange={e => setRestoreFile(e.target.files[0])}/>
           </div>
         </div>
         <div style={{display:'flex', gap:'1.5rem', marginTop:'0.75rem'}}>
           <label className="admin-email-toggle">
             <div className={`admin-toggle ${restoreDb ? 'admin-toggle--on' : ''}`}
-              onClick={() => setRestoreDb(v => !v)}>
-              <div className="admin-toggle__knob"/>
-            </div>
-            <span>Datenbank wiederherstellen</span>
+              onClick={() => setRestoreDb(v => !v)}><div className="admin-toggle__knob"/></div>
+            <span>{t('admin.backup_restore_db')}</span>
           </label>
           <label className="admin-email-toggle">
             <div className={`admin-toggle ${restoreUploads ? 'admin-toggle--on' : ''}`}
-              onClick={() => setRestoreUploads(v => !v)}>
-              <div className="admin-toggle__knob"/>
-            </div>
-            <span>Uploads wiederherstellen</span>
+              onClick={() => setRestoreUploads(v => !v)}><div className="admin-toggle__knob"/></div>
+            <span>{t('admin.backup_restore_uploads')}</span>
           </label>
         </div>
         <div className="admin-email-actions" style={{marginTop:'1rem'}}>
-          <button className="admin-btn-danger"
-            onClick={handleRestore}
-            disabled={restoring || !restoreFile}>
-            {restoring ? 'Wird wiederhergestellt…' : '⚠ Backup einspielen'}
+          <button className="admin-btn-danger" onClick={handleRestore} disabled={restoring || !restoreFile}>
+            {restoring ? t('admin.backup_restoring') : t('admin.backup_restore_btn')}
           </button>
           {restoreResult && (
             <div className={`admin-backup-result admin-backup-result--${restoreResult.type}`}>
               {restoreResult.type === 'success' ? (
                 <>
-                  <strong>✅ Wiederherstellung erfolgreich</strong>
-                  {Object.entries(restoreResult.data.results || {}).map(([k,v]) => (
-                    <span key={k}>{k}: {v}</span>
-                  ))}
-                  <span>Dauer: {restoreResult.data.duration}s</span>
+                  <strong>{t('admin.backup_restore_success')}</strong>
+                  {Object.entries(restoreResult.data.results || {}).map(([k,v]) => <span key={k}>{k}: {v}</span>)}
+                  <span>{t('admin.backup_run_duration')}: {restoreResult.data.duration}s</span>
                 </>
               ) : (
-                <><strong>❌ Fehler:</strong> <span>{restoreResult.data.error}</span></>
+                <><strong>{t('admin.backup_run_fail')}</strong> <span>{restoreResult.data.error}</span></>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* ── .env Hinweis ── */}
-
-
       {/* ── Speichern ── */}
       <div className="admin-email-save">
         {msg && <span className={`profile-msg profile-msg--${msg.type}`}>{msg.text}</span>}
         <button className="admin-btn-primary" onClick={handleSave} disabled={saving}>
-          {saving ? 'Speichern…' : 'Konfiguration speichern'}
+          {saving ? t('common.saving') : t('admin.backup_config_save')}
         </button>
       </div>
-
     </div>
   )
 }
@@ -1536,19 +1374,10 @@ function TabEmail({ t }) {
     axios.get('/api/admin/mail-config').then(r => {
       const d = r.data
       setForm({
-        smtp_host:      d.smtp.host,
-        smtp_port:      d.smtp.port,
-        smtp_user:      d.smtp.user,
-        smtp_password:  '',
-        smtp_from:      d.smtp.from_email,
-        smtp_from_name: d.smtp.from_name,
-        smtp_ssl:       d.smtp.ssl,
-        imap_host:      d.imap.host,
-        imap_port:      d.imap.port,
-        imap_user:      d.imap.user,
-        imap_password:  '',
-        imap_ssl:       d.imap.ssl,
-        imap_enabled:   d.imap.enabled,
+        smtp_host: d.smtp.host, smtp_port: d.smtp.port, smtp_user: d.smtp.user,
+        smtp_password: '', smtp_from: d.smtp.from_email, smtp_from_name: d.smtp.from_name,
+        smtp_ssl: d.smtp.ssl, imap_host: d.imap.host, imap_port: d.imap.port,
+        imap_user: d.imap.user, imap_password: '', imap_ssl: d.imap.ssl, imap_enabled: d.imap.enabled,
       })
       setLoading(false)
     }).catch(() => setLoading(false))
@@ -1557,117 +1386,102 @@ function TabEmail({ t }) {
   function set(key, val) { setForm(f => ({ ...f, [key]: val })) }
 
   async function handleSave() {
-    setSaving(true)
-    setMsg(null)
+    setSaving(true); setMsg(null)
     try {
       const payload = { ...form }
       if (!payload.smtp_password) delete payload.smtp_password
       if (!payload.imap_password) delete payload.imap_password
       await axios.patch('/api/admin/mail-config', payload)
-      setMsg({ type: 'success', text: 'Konfiguration gespeichert ✓' })
+      setMsg({ type: 'success', text: t('admin.email_saved') })
       setForm(f => ({ ...f, smtp_password: '', imap_password: '' }))
     } catch (e) {
-      setMsg({ type: 'error', text: e.response?.data?.detail || 'Fehler beim Speichern.' })
-    } finally {
-      setSaving(false)
-      setTimeout(() => setMsg(null), 4000)
-    }
+      setMsg({ type: 'error', text: e.response?.data?.detail || t('admin.error_save') })
+    } finally { setSaving(false); setTimeout(() => setMsg(null), 4000) }
   }
 
   async function handleTestSmtp() {
-    setTesting(t => ({ ...t, smtp: true }))
-    setTestSmtp(null)
+    setTesting(t => ({ ...t, smtp: true })); setTestSmtp(null)
     try {
       const r = await axios.post('/api/admin/mail-config/test-smtp')
       setTestSmtp({ type: 'success', text: r.data.detail })
     } catch (e) {
-      setTestSmtp({ type: 'error', text: e.response?.data?.detail || 'SMTP-Test fehlgeschlagen.' })
-    } finally {
-      setTesting(t => ({ ...t, smtp: false }))
-    }
+      setTestSmtp({ type: 'error', text: e.response?.data?.detail || t('admin.email_smtp_test_error') })
+    } finally { setTesting(t => ({ ...t, smtp: false })) }
   }
 
   async function handleTestImap() {
-    setTesting(t => ({ ...t, imap: true }))
-    setTestImap(null)
+    setTesting(t => ({ ...t, imap: true })); setTestImap(null)
     try {
       const r = await axios.post('/api/admin/mail-config/test-imap')
       setTestImap({ type: 'success', text: r.data.detail })
     } catch (e) {
-      setTestImap({ type: 'error', text: e.response?.data?.detail || 'IMAP-Test fehlgeschlagen.' })
-    } finally {
-      setTesting(t => ({ ...t, imap: false }))
-    }
+      setTestImap({ type: 'error', text: e.response?.data?.detail || t('admin.email_imap_test_error') })
+    } finally { setTesting(t => ({ ...t, imap: false })) }
   }
 
-  if (loading) return <div className="admin-loading">Lade Mail-Konfiguration…</div>
+  if (loading) return <div className="admin-loading">{t('admin.email_loading')}</div>
 
   return (
     <div className="admin-email">
 
       {/* ── IMAP-Schalter ── */}
       <div className="admin-email-section glass">
-        <h3 className="admin-section-title" style={{ marginTop: 0 }}>Ticket-Eingang per E-Mail</h3>
-        <p className="admin-avatar-hint">
-          Wenn aktiviert, werden eingehende E-Mails automatisch als Tickets angelegt (IMAP-Polling alle 60s).
-        </p>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.email_imap_incoming_title')}</h3>
+        <p className="admin-avatar-hint">{t('admin.email_imap_incoming_hint')}</p>
         <label className="admin-email-toggle">
-          <div
-            className={`admin-toggle ${form.imap_enabled === 'true' ? 'admin-toggle--on' : ''}`}
-            onClick={() => set('imap_enabled', form.imap_enabled === 'true' ? 'false' : 'true')}
-          >
-            <div className="admin-toggle__knob" />
+          <div className={`admin-toggle ${form.imap_enabled === 'true' ? 'admin-toggle--on' : ''}`}
+            onClick={() => set('imap_enabled', form.imap_enabled === 'true' ? 'false' : 'true')}>
+            <div className="admin-toggle__knob"/>
           </div>
-          <span>{form.imap_enabled === 'true' ? 'Aktiviert' : 'Deaktiviert'}</span>
+          <span>{form.imap_enabled === 'true' ? t('common.active') : t('common.inactive')}</span>
         </label>
       </div>
 
       {/* ── SMTP ── */}
       <div className="admin-email-section glass">
-        <h3 className="admin-section-title" style={{ marginTop: 0 }}>SMTP — Ausgehende E-Mails</h3>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.email_smtp_title')}</h3>
         <div className="admin-email-grid">
           <div className="admin-email-field">
-            <label>Server (Host)</label>
+            <label>{t('admin.email_host')}</label>
             <input className="admin-filter-input" value={form.smtp_host}
-              onChange={e => set('smtp_host', e.target.value)} placeholder="mail.beispiel.de" />
+              onChange={e => set('smtp_host', e.target.value)} placeholder="mail.beispiel.de"/>
           </div>
           <div className="admin-email-field">
-            <label>Port</label>
+            <label>{t('admin.email_port')}</label>
             <input className="admin-filter-input" value={form.smtp_port}
-              onChange={e => set('smtp_port', e.target.value)} placeholder="465" />
+              onChange={e => set('smtp_port', e.target.value)} placeholder="465"/>
           </div>
           <div className="admin-email-field">
-            <label>Benutzername</label>
+            <label>{t('admin.email_user')}</label>
             <input className="admin-filter-input" value={form.smtp_user}
-              onChange={e => set('smtp_user', e.target.value)} placeholder="user@beispiel.de" />
+              onChange={e => set('smtp_user', e.target.value)} placeholder="user@beispiel.de"/>
           </div>
           <div className="admin-email-field">
-            <label>Passwort <span className="admin-avatar-hint">(leer lassen = unverändert)</span></label>
+            <label>{t('admin.email_password_hint')}</label>
             <input className="admin-filter-input" type="password" value={form.smtp_password}
-              onChange={e => set('smtp_password', e.target.value)} placeholder="••••••••" />
+              onChange={e => set('smtp_password', e.target.value)} placeholder="••••••••"/>
           </div>
           <div className="admin-email-field">
-            <label>Absender-Adresse</label>
+            <label>{t('admin.email_from')}</label>
             <input className="admin-filter-input" value={form.smtp_from}
-              onChange={e => set('smtp_from', e.target.value)} placeholder="support@beispiel.de" />
+              onChange={e => set('smtp_from', e.target.value)} placeholder="support@beispiel.de"/>
           </div>
           <div className="admin-email-field">
-            <label>Absender-Name</label>
+            <label>{t('admin.email_from_name')}</label>
             <input className="admin-filter-input" value={form.smtp_from_name}
-              onChange={e => set('smtp_from_name', e.target.value)} placeholder="Mein Support" />
+              onChange={e => set('smtp_from_name', e.target.value)} placeholder="Mein Support"/>
           </div>
           <div className="admin-email-field">
-            <label>Verschlüsselung</label>
-            <select className="admin-filter-input" value={form.smtp_ssl}
-              onChange={e => set('smtp_ssl', e.target.value)}>
-              <option value="true">SSL (Port 465)</option>
-              <option value="false">STARTTLS (Port 587)</option>
+            <label>{t('admin.email_ssl')}</label>
+            <select className="admin-filter-input" value={form.smtp_ssl} onChange={e => set('smtp_ssl', e.target.value)}>
+              <option value="true">{t('admin.email_ssl_on')}</option>
+              <option value="false">{t('admin.email_ssl_off')}</option>
             </select>
           </div>
         </div>
         <div className="admin-email-actions">
           <button className="admin-btn-secondary" onClick={handleTestSmtp} disabled={testing.smtp}>
-            {testing.smtp ? 'Teste…' : 'Verbindung testen'}
+            {testing.smtp ? t('admin.email_testing') : t('admin.email_test_btn')}
           </button>
           {testSmtp && <span className={`admin-email-msg admin-email-msg--${testSmtp.type}`}>{testSmtp.text}</span>}
         </div>
@@ -1675,40 +1489,39 @@ function TabEmail({ t }) {
 
       {/* ── IMAP ── */}
       <div className="admin-email-section glass">
-        <h3 className="admin-section-title" style={{ marginTop: 0 }}>IMAP — Eingehende E-Mails</h3>
+        <h3 className="admin-section-title" style={{marginTop:0}}>{t('admin.email_imap_title')}</h3>
         <div className="admin-email-grid">
           <div className="admin-email-field">
-            <label>Server (Host)</label>
+            <label>{t('admin.email_host')}</label>
             <input className="admin-filter-input" value={form.imap_host}
-              onChange={e => set('imap_host', e.target.value)} placeholder="mail.beispiel.de" />
+              onChange={e => set('imap_host', e.target.value)} placeholder="mail.beispiel.de"/>
           </div>
           <div className="admin-email-field">
-            <label>Port</label>
+            <label>{t('admin.email_port')}</label>
             <input className="admin-filter-input" value={form.imap_port}
-              onChange={e => set('imap_port', e.target.value)} placeholder="993" />
+              onChange={e => set('imap_port', e.target.value)} placeholder="993"/>
           </div>
           <div className="admin-email-field">
-            <label>Benutzername</label>
+            <label>{t('admin.email_user')}</label>
             <input className="admin-filter-input" value={form.imap_user}
-              onChange={e => set('imap_user', e.target.value)} placeholder="user@beispiel.de" />
+              onChange={e => set('imap_user', e.target.value)} placeholder="user@beispiel.de"/>
           </div>
           <div className="admin-email-field">
-            <label>Passwort <span className="admin-avatar-hint">(leer lassen = unverändert)</span></label>
+            <label>{t('admin.email_password_hint')}</label>
             <input className="admin-filter-input" type="password" value={form.imap_password}
-              onChange={e => set('imap_password', e.target.value)} placeholder="••••••••" />
+              onChange={e => set('imap_password', e.target.value)} placeholder="••••••••"/>
           </div>
           <div className="admin-email-field">
-            <label>Verschlüsselung</label>
-            <select className="admin-filter-input" value={form.imap_ssl}
-              onChange={e => set('imap_ssl', e.target.value)}>
-              <option value="true">SSL (Port 993)</option>
-              <option value="false">STARTTLS (Port 143)</option>
+            <label>{t('admin.email_ssl')}</label>
+            <select className="admin-filter-input" value={form.imap_ssl} onChange={e => set('imap_ssl', e.target.value)}>
+              <option value="true">{t('admin.email_imap_ssl_on')}</option>
+              <option value="false">{t('admin.email_imap_ssl_off')}</option>
             </select>
           </div>
         </div>
         <div className="admin-email-actions">
           <button className="admin-btn-secondary" onClick={handleTestImap} disabled={testing.imap}>
-            {testing.imap ? 'Teste…' : 'Verbindung testen'}
+            {testing.imap ? t('admin.email_testing') : t('admin.email_test_btn')}
           </button>
           {testImap && <span className={`admin-email-msg admin-email-msg--${testImap.type}`}>{testImap.text}</span>}
         </div>
@@ -1718,29 +1531,27 @@ function TabEmail({ t }) {
       <div className="admin-email-save">
         {msg && <span className={`profile-msg profile-msg--${msg.type}`}>{msg.text}</span>}
         <button className="admin-btn-primary" onClick={handleSave} disabled={saving}>
-          {saving ? 'Speichern…' : 'Konfiguration speichern'}
+          {saving ? t('common.saving') : t('admin.email_save_btn')}
         </button>
       </div>
-
     </div>
   )
 }
 
 // ── Hauptkomponente ────────────────────────────────────────────────────────────
-const TABS = ['overview', 'users', 'groups', 'sla', 'audit', 'system', 'email', 'templates', 'statistics', 'backup']
+const TABS = ['overview','users','groups','sla','audit','system','email','templates','statistics','backup']
 
 export default function AdminPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
 
-  // Nur Admins und Superadmins
   if (!user || !['admin', 'superadmin'].includes(user.role)) {
     return (
       <div className="admin-page">
         <NavBar />
         <main className="admin-main">
-          <p>Kein Zugriff.</p>
+          <p>{t('admin.no_access')}</p>
         </main>
       </div>
     )
@@ -1751,30 +1562,26 @@ export default function AdminPage() {
       <NavBar />
       <main className="admin-main">
         <h1 className="admin-title">{t('admin.title')}</h1>
-
         <div className="admin-tabs glass">
           {TABS.map(tab => (
-            <button
-              key={tab}
+            <button key={tab}
               className={`admin-tab ${activeTab === tab ? 'admin-tab--active' : ''}`}
-              onClick={() => setActiveTab(tab)}
-            >
+              onClick={() => setActiveTab(tab)}>
               {t(`admin.tab_${tab}`)}
             </button>
           ))}
         </div>
-
         <div className="admin-tab-content">
-          {activeTab === 'overview' && <TabOverview t={t} />}
-          {activeTab === 'users'    && <div className="admin-embedded"><UsersPage embedded /></div>}
-          {activeTab === 'groups'   && <div className="admin-embedded"><GroupsPage embedded /></div>}
-          {activeTab === 'sla'      && <TabSLA t={t} />}
-          {activeTab === 'audit'    && <TabAudit t={t} />}
-          {activeTab === 'system'   && <TabSystem t={t} />}
-          {activeTab === 'email'    && <TabEmail t={t} />}
-          {activeTab === 'templates' && <TabTemplates t={t} />}
-          {activeTab === 'statistics' && <TabStatistics t={t} />}
-          {activeTab === 'backup'     && <TabBackup t={t} />}
+          {activeTab === 'overview'    && <TabOverview t={t} />}
+          {activeTab === 'users'       && <div className="admin-embedded"><UsersPage embedded /></div>}
+          {activeTab === 'groups'      && <div className="admin-embedded"><GroupsPage embedded /></div>}
+          {activeTab === 'sla'         && <TabSLA t={t} />}
+          {activeTab === 'audit'       && <TabAudit t={t} />}
+          {activeTab === 'system'      && <TabSystem t={t} />}
+          {activeTab === 'email'       && <TabEmail t={t} />}
+          {activeTab === 'templates'   && <TabTemplates t={t} />}
+          {activeTab === 'statistics'  && <TabStatistics t={t} />}
+          {activeTab === 'backup'      && <TabBackup t={t} />}
         </div>
       </main>
     </div>

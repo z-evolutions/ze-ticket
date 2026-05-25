@@ -18,19 +18,16 @@ export default function GroupsPage({ embedded = false } = {}) {
   const [error,       setError]       = useState(null)
   const [agents,      setAgents]      = useState([])
 
-  // Modal: Neue Gruppe
   const [showCreate,  setShowCreate]  = useState(false)
   const [createForm,  setCreateForm]  = useState(EMPTY_FORM)
   const [createError, setCreateError] = useState(null)
   const [creating,    setCreating]    = useState(false)
 
-  // Modal: Gruppe bearbeiten
   const [editGroup,   setEditGroup]   = useState(null)
   const [editForm,    setEditForm]    = useState(EMPTY_FORM)
   const [editError,   setEditError]   = useState(null)
   const [editing,     setEditing]     = useState(false)
 
-  // Modal: Mitglieder
   const [membersGroup, setMembersGroup] = useState(null)
   const [memberSaving, setMemberSaving] = useState(null)
 
@@ -97,7 +94,6 @@ export default function GroupsPage({ embedded = false } = {}) {
     finally { setMemberSaving(null) }
   }
 
-  // Agenten die noch nicht in der Gruppe sind
   function availableAgents(group) {
     const memberIds = group.members.map(m => m.id.toString())
     return agents.filter(a => !memberIds.includes(a.id.toString()))
@@ -257,11 +253,10 @@ export default function GroupsPage({ embedded = false } = {}) {
               <button className="groups-modal__close" onClick={() => setMembersGroup(null)}>×</button>
             </div>
 
-            {/* Aktuelle Mitglieder */}
             <div className="groups-members-section">
-              <h3 className="groups-members-title">Aktuelle Mitglieder ({membersGroup.members.length})</h3>
+              <h3 className="groups-members-title">{t('groups.members_current', { count: membersGroup.members.length })}</h3>
               {membersGroup.members.length === 0 ? (
-                <p className="groups-members-empty">Noch keine Mitglieder.</p>
+                <p className="groups-members-empty">{t('groups.members_empty')}</p>
               ) : (
                 <div className="groups-members-list">
                   {membersGroup.members.map(m => (
@@ -281,9 +276,8 @@ export default function GroupsPage({ embedded = false } = {}) {
               )}
             </div>
 
-            {/* Verfügbare Agenten */}
             <div className="groups-members-section">
-              <h3 className="groups-members-title">Agenten hinzufügen</h3>
+              <h3 className="groups-members-title">{t('groups.members_add_title')}</h3>
               {availableAgents(membersGroup).length === 0 ? (
                 <p className="groups-members-empty">{t('groups.no_agents')}</p>
               ) : (

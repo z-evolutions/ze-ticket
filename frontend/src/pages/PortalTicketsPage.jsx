@@ -14,8 +14,6 @@ const STATUS_CLASS = {
   geloest: 'portal-badge--done', geschlossen: 'portal-badge--closed',
 }
 
-
-
 export default function PortalTicketsPage() {
   const { user, logout } = useAuth()
   const logoUrl = useLogo()
@@ -61,7 +59,9 @@ export default function PortalTicketsPage() {
           <button className="portal-pw-link" onClick={() => navigate('/portal/passwort')}>
             🔑 {user?.display_name}
           </button>
-          <button className="portal-logout-btn" onClick={() => { logout(); window.location.href = '/login' }}>{t('portal.logout')}</button>
+          <button className="portal-logout-btn" onClick={() => { logout(); window.location.href = '/login' }}>
+            {t('portal.logout')}
+          </button>
         </div>
       </header>
 
@@ -94,7 +94,7 @@ export default function PortalTicketsPage() {
                 <h3 className="portal-ticket-subject">{ticket.subject}</h3>
                 <div className="portal-ticket-meta">
                   <span>{t('tickets.col_created')}: {formatDate(ticket.created_at)}</span>
-                  <span>{t('tickets.col_status')}: {formatDate(ticket.updated_at)}</span>
+                  <span>{t('portal.detail_updated')}: {formatDate(ticket.updated_at)}</span>
                 </div>
               </div>
             ))}

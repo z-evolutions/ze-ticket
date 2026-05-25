@@ -7,16 +7,20 @@ import NavBar from '../components/NavBar'
 import './ProfilePage.css'
 
 function PasswordStrength({ password }) {
+  const { t } = useTranslation()
   const checks = [
-    { label: 'Mind. 10 Zeichen', ok: password.length >= 10 },
-    { label: 'Großbuchstabe', ok: /[A-Z]/.test(password) },
-    { label: 'Kleinbuchstabe', ok: /[a-z]/.test(password) },
-    { label: 'Zahl', ok: /[0-9]/.test(password) },
-    { label: 'Sonderzeichen', ok: /[^A-Za-z0-9]/.test(password) },
+    { label: t('profile.pw_check_length'),  ok: password.length >= 10 },
+    { label: t('profile.pw_check_upper'),   ok: /[A-Z]/.test(password) },
+    { label: t('profile.pw_check_lower'),   ok: /[a-z]/.test(password) },
+    { label: t('profile.pw_check_number'),  ok: /[0-9]/.test(password) },
+    { label: t('profile.pw_check_special'), ok: /[^A-Za-z0-9]/.test(password) },
   ]
   const score = checks.filter(c => c.ok).length
   const color = score <= 2 ? '#ef4444' : score <= 3 ? '#f59e0b' : '#22c55e'
-  const label = score <= 2 ? 'Schwach' : score <= 3 ? 'Mittel' : score === 4 ? 'Gut' : 'Stark'
+  const label = score <= 2 ? t('profile.pw_strength_weak')
+    : score <= 3 ? t('profile.pw_strength_medium')
+    : score === 4 ? t('profile.pw_strength_good')
+    : t('profile.pw_strength_strong')
 
   return (
     <div className="pw-strength">
@@ -43,27 +47,21 @@ export default function ProfilePage() {
   const { t, i18n } = useTranslation()
   const fileRef = useRef(null)
 
-  // ── Profil-State ───────────────────────────────────────────────────────────
   const [form, setForm] = useState({
     display_name: '',
     full_name: '',
     theme: 'dark',
     language: 'de',
   })
-  const [avatarUrl,    setAvatarUrl]    = useState(null)
-  const [saving,       setSaving]       = useState(false)
-  const [saveMsg,      setSaveMsg]      = useState(null)
-
-  // ── Passwort-State ─────────────────────────────────────────────────────────
-  const [pw, setPw] = useState({ current: '', new: '', confirm: '' })
-  const [pwSaving,  setPwSaving]  = useState(false)
-  const [pwMsg,     setPwMsg]     = useState(null)
-
-  // ── Avatar-State ───────────────────────────────────────────────────────────
+  const [avatarUrl,       setAvatarUrl]       = useState(null)
+  const [saving,          setSaving]          = useState(false)
+  const [saveMsg,         setSaveMsg]         = useState(null)
+  const [pw,              setPw]              = useState({ current: '', new: '', confirm: '' })
+  const [pwSaving,        setPwSaving]        = useState(false)
+  const [pwMsg,           setPwMsg]           = useState(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarMsg,       setAvatarMsg]       = useState(null)
 
-  // ── Profil laden ───────────────────────────────────────────────────────────
   useEffect(() => {
     axios.get('/api/users/me').then(res => {
       const u = res.data
@@ -77,13 +75,11 @@ export default function ProfilePage() {
     })
   }, [])
 
-  // ── Profil speichern ───────────────────────────────────────────────────────
   async function handleSave(e) {
     e.preventDefault()
     setSaving(true); setSaveMsg(null)
     try {
       await axios.patch('/api/users/me', form)
-      // Theme + Sprache sofort anwenden
       setTheme(form.theme)
       i18n.changeLanguage(form.language)
       localStorage.setItem('ze-language', form.language)
@@ -96,16 +92,12 @@ export default function ProfilePage() {
     }
   }
 
-  // ── Avatar hochladen ───────────────────────────────────────────────────────
   async function handleAvatarChange(e) {
     const file = e.target.files[0]
     if (!file) return
-
     if (file.size > 2 * 1024 * 1024) {
-      setAvatarMsg({ type: 'error', text: t('profile.avatar_too_large') })
-      return
+      setAvatarMsg({ type: 'error', text: t('profile.avatar_too_large') }); return
     }
-
     setAvatarUploading(true); setAvatarMsg(null)
     const formData = new FormData()
     formData.append('file', file)
@@ -123,12 +115,10 @@ export default function ProfilePage() {
     }
   }
 
-  // ── Passwort ändern ────────────────────────────────────────────────────────
   async function handlePasswordChange(e) {
     e.preventDefault()
     if (pw.new !== pw.confirm) {
-      setPwMsg({ type: 'error', text: t('profile.password_mismatch') })
-      return
+      setPwMsg({ type: 'error', text: t('profile.password_mismatch') }); return
     }
     setPwSaving(true); setPwMsg(null)
     try {
@@ -139,17 +129,14 @@ export default function ProfilePage() {
       setPwMsg({ type: 'success', text: t('profile.password_changed') })
       setPw({ current: '', new: '', confirm: '' })
     } catch (err) {
-      const detail = err.response?.data?.detail || t('profile.password_error')
-      setPwMsg({ type: 'error', text: detail })
+      setPwMsg({ type: 'error', text: err.response?.data?.detail || t('profile.password_error') })
     } finally {
       setPwSaving(false)
       setTimeout(() => setPwMsg(null), 4000)
     }
   }
 
-  const avatarSrc = avatarUrl
-    ? `${avatarUrl}?t=${Date.now()}`
-    : null
+  const avatarSrc = avatarUrl ? `${avatarUrl}?t=${Date.now()}` : null
 
   return (
     <div className="profile-page">
@@ -163,57 +150,39 @@ export default function ProfilePage() {
           <div className="profile-card glass profile-card--avatar">
             <h2 className="profile-section-title">{t('profile.section_avatar')}</h2>
             <div className="profile-avatar-wrap">
-              {avatarSrc ? (
-                <img src={avatarSrc} alt="Avatar" className="profile-avatar-img" />
-              ) : (
-                <div className="profile-avatar-placeholder">
-                  {form.display_name?.[0]?.toUpperCase() || '?'}
-                </div>
-              )}
+              {avatarSrc
+                ? <img src={avatarSrc} alt="Avatar" className="profile-avatar-img" />
+                : <div className="profile-avatar-placeholder">{form.display_name?.[0]?.toUpperCase() || '?'}</div>
+              }
             </div>
-            <input
-              type="file"
-              ref={fileRef}
+            <input type="file" ref={fileRef}
               accept="image/jpeg,image/png,image/webp,image/gif"
-              style={{ display: 'none' }}
-              onChange={handleAvatarChange}
-            />
-            <button
-              className="profile-avatar-btn"
-              onClick={() => fileRef.current?.click()}
-              disabled={avatarUploading}
-            >
+              style={{ display: 'none' }} onChange={handleAvatarChange} />
+            <button className="profile-avatar-btn" onClick={() => fileRef.current?.click()} disabled={avatarUploading}>
               {avatarUploading ? t('profile.avatar_uploading') : t('profile.avatar_upload')}
             </button>
             <p className="profile-avatar-hint">{t('profile.avatar_hint')}</p>
-            {avatarMsg && (
-              <p className={`profile-msg profile-msg--${avatarMsg.type}`}>{avatarMsg.text}</p>
-            )}
+            {avatarMsg && <p className={`profile-msg profile-msg--${avatarMsg.type}`}>{avatarMsg.text}</p>}
           </div>
 
-          {/* ── Allgemein + Einstellungen ── */}
+          {/* ── Allgemein ── */}
           <div className="profile-card glass profile-card--main">
             <h2 className="profile-section-title">{t('profile.section_general')}</h2>
             <form onSubmit={handleSave} className="profile-form">
-
               <div className="profile-field">
                 <label>{t('profile.email')} <span className="profile-hint">{t('profile.email_hint')}</span></label>
                 <input type="email" value={user?.email || ''} disabled className="profile-input--disabled" />
               </div>
-
               <div className="profile-field">
                 <label>{t('profile.display_name')}</label>
                 <input type="text" value={form.display_name}
-                  onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))}
-                  required />
+                  onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))} required />
               </div>
-
               <div className="profile-field">
                 <label>{t('profile.full_name')} <span className="profile-hint">{t('profile.full_name_hint')}</span></label>
                 <input type="text" value={form.full_name}
                   onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))} />
               </div>
-
               <div className="profile-row">
                 <div className="profile-field">
                   <label>{t('profile.theme')}</label>
@@ -230,11 +199,7 @@ export default function ProfilePage() {
                   </select>
                 </div>
               </div>
-
-              {saveMsg && (
-                <p className={`profile-msg profile-msg--${saveMsg.type}`}>{saveMsg.text}</p>
-              )}
-
+              {saveMsg && <p className={`profile-msg profile-msg--${saveMsg.type}`}>{saveMsg.text}</p>}
               <div className="profile-form-footer">
                 <button type="submit" className="profile-save-btn" disabled={saving}>
                   {saving ? t('profile.saving') : t('profile.save')}
@@ -266,9 +231,7 @@ export default function ProfilePage() {
                   onChange={e => setPw(p => ({ ...p, confirm: e.target.value }))}
                   required placeholder="••••••••••" />
               </div>
-              {pwMsg && (
-                <p className={`profile-msg profile-msg--${pwMsg.type}`}>{pwMsg.text}</p>
-              )}
+              {pwMsg && <p className={`profile-msg profile-msg--${pwMsg.type}`}>{pwMsg.text}</p>}
               <div className="profile-form-footer">
                 <button type="submit" className="profile-pw-btn" disabled={pwSaving}>
                   {pwSaving ? t('profile.password_changing') : t('profile.password_change')}

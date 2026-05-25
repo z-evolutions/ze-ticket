@@ -15,12 +15,12 @@ export default function PortalChangePasswordPage() {
   const [form, setForm] = useState({
     current_password: '', new_password: '', new_password_confirm: ''
   })
-  const [submitting,    setSubmitting]    = useState(false)
-  const [error,         setError]         = useState(null)
-  const [success,       setSuccess]       = useState(false)
-  const [showDelete,    setShowDelete]    = useState(false)
-  const [deleting,      setDeleting]      = useState(false)
-  const [deleteError,   setDeleteError]   = useState(null)
+  const [submitting,  setSubmitting]  = useState(false)
+  const [error,       setError]       = useState(null)
+  const [success,     setSuccess]     = useState(false)
+  const [showDelete,  setShowDelete]  = useState(false)
+  const [deleting,    setDeleting]    = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
 
   function handleChange(e) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -29,7 +29,7 @@ export default function PortalChangePasswordPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (form.new_password !== form.new_password_confirm) {
-      setError('Neue Passwörter stimmen nicht überein.'); return
+      setError(t('portal.pw_mismatch')); return
     }
     setSubmitting(true); setError(null)
     try {
@@ -37,7 +37,7 @@ export default function PortalChangePasswordPage() {
       setSuccess(true)
       setTimeout(() => navigate('/portal'), 2000)
     } catch (err) {
-      setError(err.response?.data?.detail || 'Fehler beim Ändern des Passworts.')
+      setError(err.response?.data?.detail || t('portal.pw_error'))
     } finally {
       setSubmitting(false)
     }
@@ -75,80 +75,73 @@ export default function PortalChangePasswordPage() {
       <main className="portal-main">
         <div className="portal-breadcrumb">
           <button className="portal-back-btn" onClick={() => navigate('/portal')}>
-            ← Zurück zu meinen Tickets
+            {t('portal.back_to_tickets')}
           </button>
         </div>
 
         <div className="portal-pw-card glass">
-          <h1 className="portal-pw-title">Passwort ändern</h1>
-          <p className="portal-pw-sub">
-            Ihr neues Passwort gilt für alle zukünftigen Logins im Support-Portal —
-            unabhängig von der Ticket-Nummer.
-          </p>
+          <h1 className="portal-pw-title">{t('portal.pw_title')}</h1>
+          <p className="portal-pw-sub">{t('portal.pw_sub')}</p>
 
           {success ? (
-            <div className="portal-pw-success">
-              ✅ Passwort erfolgreich geändert. Sie werden weitergeleitet…
-            </div>
+            <div className="portal-pw-success">{t('portal.pw_success')}</div>
           ) : (
             <form onSubmit={handleSubmit} className="portal-pw-form">
               <div className="portal-pw-field">
-                <label>Aktuelles Passwort</label>
+                <label>{t('portal.pw_current')}</label>
                 <input type="password" name="current_password"
                   value={form.current_password} onChange={handleChange} required autoFocus />
               </div>
               <div className="portal-pw-field">
-                <label>Neues Passwort</label>
+                <label>{t('portal.pw_new')}</label>
                 <input type="password" name="new_password"
                   value={form.new_password} onChange={handleChange} required
-                  placeholder="Mindestens 10 Zeichen" />
+                  placeholder={t('auth.onboarding_placeholder_new')} />
               </div>
               <div className="portal-pw-field">
-                <label>Neues Passwort bestätigen</label>
+                <label>{t('portal.pw_confirm')}</label>
                 <input type="password" name="new_password_confirm"
                   value={form.new_password_confirm} onChange={handleChange} required />
               </div>
-              <div className="portal-pw-policy">
-                Mindestens 10 Zeichen · Groß- & Kleinbuchstaben · Zahl · Sonderzeichen
-              </div>
+              <div className="portal-pw-policy">{t('portal.pw_policy')}</div>
               {error && <div className="portal-pw-error">{error}</div>}
               <div className="portal-pw-footer">
                 <button type="button" className="portal-back-btn"
-                  onClick={() => navigate('/portal')}>Abbrechen</button>
+                  onClick={() => navigate('/portal')}>{t('common.cancel')}</button>
                 <button type="submit" className="portal-pw-submit"
                   disabled={!form.current_password || !form.new_password || submitting}>
-                  {submitting ? 'Wird gespeichert…' : 'Passwort ändern'}
+                  {submitting ? t('common.saving') : t('portal.pw_submit')}
                 </button>
               </div>
             </form>
           )}
         </div>
-      {/* ── Konto löschen ── */}
-      <div className="portal-delete-section">
-        <button className="portal-delete-btn" onClick={() => setShowDelete(true)}>
-          🗑️ {t('portal.delete_account')}
-        </button>
-      </div>
 
-      {/* ── Bestätigungs-Modal ── */}
-      {showDelete && (
-        <div className="portal-modal-overlay" onClick={e => e.target === e.currentTarget && setShowDelete(false)}>
-          <div className="portal-modal glass">
-            <h2 className="portal-modal__title">⚠️ {t('portal.delete_account_title')}</h2>
-            <p className="portal-modal__text">{t('portal.delete_account_warning')}</p>
-            {deleteError && <div className="portal-pw-error">{deleteError}</div>}
-            <div className="portal-modal__footer">
-              <button className="portal-back-btn" onClick={() => setShowDelete(false)}>
-                {t('portal.delete_account_cancel')}
-              </button>
-              <button className="portal-delete-confirm-btn" onClick={handleDeleteAccount} disabled={deleting}>
-                {deleting ? '⏳ Wird gelöscht…' : t('portal.delete_account_confirm')}
-              </button>
+        {/* ── Konto löschen ── */}
+        <div className="portal-delete-section">
+          <button className="portal-delete-btn" onClick={() => setShowDelete(true)}>
+            🗑️ {t('portal.delete_account')}
+          </button>
+        </div>
+
+        {/* ── Bestätigungs-Modal ── */}
+        {showDelete && (
+          <div className="portal-modal-overlay" onClick={e => e.target === e.currentTarget && setShowDelete(false)}>
+            <div className="portal-modal glass">
+              <h2 className="portal-modal__title">⚠️ {t('portal.delete_account_title')}</h2>
+              <p className="portal-modal__text">{t('portal.delete_account_warning')}</p>
+              {deleteError && <div className="portal-pw-error">{deleteError}</div>}
+              <div className="portal-modal__footer">
+                <button className="portal-back-btn" onClick={() => setShowDelete(false)}>
+                  {t('portal.delete_account_cancel')}
+                </button>
+                <button className="portal-delete-confirm-btn" onClick={handleDeleteAccount} disabled={deleting}>
+                  {deleting ? t('portal.deleting') : t('portal.delete_account_confirm')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
+        )}
       </main>
     </div>
   )

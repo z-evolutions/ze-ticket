@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getNotifications, clearTicketNotifs, clearCommentNotifs, subscribe } from '../store/notifications'
 import './NotificationBells.css'
 
 function Bell({ icon, count, items, onClear }) {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const ref = useRef(null)
 
   useEffect(() => {
@@ -25,11 +27,11 @@ function Bell({ icon, count, items, onClear }) {
       {open && (
         <div className="nbell__dropdown">
           <div className="nbell__header">
-            <span>{count > 0 ? `${count} neu` : 'Keine neuen'}</span>
-            {count > 0 && <button className="nbell__clear" onClick={() => { onClear(); setOpen(false) }}>Alle löschen</button>}
+            <span>{count > 0 ? t('notifications.count_new', { count }) : t('notifications.none_new')}</span>
+            {count > 0 && <button className="nbell__clear" onClick={() => { onClear(); setOpen(false) }}>{t('notifications.clear_all')}</button>}
           </div>
           {items.length === 0 ? (
-            <div className="nbell__empty">Keine Benachrichtigungen</div>
+            <div className="nbell__empty">{t('notifications.empty')}</div>
           ) : (
             <div className="nbell__list">
               {items.map((item, i) => (

@@ -82,7 +82,7 @@ export default function LoginPage() {
       {showImprint && <PrivacyModal type="imprint_text" onClose={() => setShowImprint(false)} />}
 
       <div className="login-top-actions">
-        <button className="theme-toggle" onClick={toggleTheme} title="Theme wechseln">
+        <button className="theme-toggle" onClick={toggleTheme} title={t('common.theme_toggle')}>
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
         <button className="login-lang-btn" onClick={toggleLanguage}>
@@ -109,17 +109,17 @@ export default function LoginPage() {
             <span className="login-card__icon">🎫</span>
             <h2 className="login-card__title">{t('portal.new_ticket_apply')}</h2>
           </div>
-            <div className="login-request-ticket">
-              <button className="login-request-btn" onClick={() => navigate('/ticket-beantragen')}>
-                🎫 {t('portal.request_ticket')}
-              </button>
-              <p className="login-request-sub">{t('portal.request_ticket_sub')}</p>
-            </div>
-            <p className="login-privacy-hint">
-              <button type="button" className="login-privacy-link" onClick={() => setShowPrivacy(true)}>
-                {t('privacy.link')}
-              </button>
-            </p>
+          <div className="login-request-ticket">
+            <button className="login-request-btn" onClick={() => navigate('/ticket-beantragen')}>
+              🎫 {t('portal.request_ticket')}
+            </button>
+            <p className="login-request-sub">{t('portal.request_ticket_sub')}</p>
+          </div>
+          <p className="login-privacy-hint">
+            <button type="button" className="login-privacy-link" onClick={() => setShowPrivacy(true)}>
+              {t('privacy.link')}
+            </button>
+          </p>
         </div>
 
         {/* ── Kunden-Login ── */}
@@ -156,32 +156,32 @@ export default function LoginPage() {
         </div>
 
         {/* ── Mitarbeiter-Login ── */}
-            <div className="login-card login-card--agent glass">
-              <div className="login-card__header">
-                <span className="login-card__icon">👤</span>
-                <h2 className="login-card__title">{t('portal.agent_login')}</h2>
-                <p className="login-card__sub">{t('portal.agent_login_sub')}</p>
-              </div>
-              <form onSubmit={handleAgentLogin} className="login-form">
-                <div className="form-group">
-                  <label htmlFor="email">{t('auth.email')}</label>
-                  <input id="email" type="email" value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="name@beispiel.de" required />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="password">{t('auth.password')}</label>
-                  <input id="password" type="password" value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••••" required />
-                </div>
-                {error && <div className="login-error">{error}</div>}
-                <button type="submit" className="login-btn login-btn--agent" disabled={loading}>
-                  {loading ? t('auth.login_loading') : t('auth.login_btn')}
-                </button>
-                <a href="/reset-password" className="forgot-link">{t('auth.forgot_password')}</a>
-              </form>
+        <div className="login-card login-card--agent glass">
+          <div className="login-card__header">
+            <span className="login-card__icon">👤</span>
+            <h2 className="login-card__title">{t('portal.agent_login')}</h2>
+            <p className="login-card__sub">{t('portal.agent_login_sub')}</p>
+          </div>
+          <form onSubmit={handleAgentLogin} className="login-form">
+            <div className="form-group">
+              <label htmlFor="email">{t('auth.email')}</label>
+              <input id="email" type="email" value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="name@beispiel.de" required />
             </div>
+            <div className="form-group">
+              <label htmlFor="password">{t('auth.password')}</label>
+              <input id="password" type="password" value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••••" required />
+            </div>
+            {error && <div className="login-error">{error}</div>}
+            <button type="submit" className="login-btn login-btn--agent" disabled={loading}>
+              {loading ? t('auth.login_loading') : t('auth.login_btn')}
+            </button>
+            <a href="/reset-password" className="forgot-link">{t('auth.forgot_password')}</a>
+          </form>
+        </div>
 
       </div>
 

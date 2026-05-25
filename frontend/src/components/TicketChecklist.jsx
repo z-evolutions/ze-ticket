@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CHECKLIST_PHASES } from '../data/ticketChecklist'
 import './TicketChecklist.css'
 
 export default function TicketChecklist({ ticketId }) {
+  const { t } = useTranslation()
   const storageKey = `checklist_${ticketId}`
 
   const [checked, setChecked] = useState(() => {
@@ -46,7 +48,7 @@ export default function TicketChecklist({ ticketId }) {
   return (
     <div className="checklist-card glass">
       <div className="checklist-header" onClick={() => setCollapsed(c => !c)}>
-        <span className="checklist-title">Bearbeitungs-Checkliste</span>
+        <span className="checklist-title">{t('checklist.title')}</span>
         <span className="checklist-progress-text">{doneSteps}/{totalSteps}</span>
         <span className="checklist-chevron">{collapsed ? '▸' : '▾'}</span>
       </div>
@@ -62,7 +64,7 @@ export default function TicketChecklist({ ticketId }) {
 
           {allDone && (
             <div className="checklist-complete">
-              Alle Schritte abgeschlossen — Ticket kann geschlossen werden
+              {t('checklist.all_done')}
             </div>
           )}
 
@@ -118,7 +120,7 @@ export default function TicketChecklist({ ticketId }) {
           </div>
 
           <button className="checklist-reset-btn" onClick={reset}>
-            Zuruecksetzen
+            {t('checklist.reset')}
           </button>
         </>
       )}

@@ -25,8 +25,6 @@ const COMMENT_TYPE_CLASS = {
   antwort: 'detail-comment--antwort', interne_notiz: 'detail-comment--notiz',
 }
 
-
-
 export default function TicketDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -52,7 +50,6 @@ export default function TicketDetailPage() {
 
   const isAgent = user?.role && ['agent', 'manager', 'admin', 'superadmin'].includes(user.role)
 
-  // Stiller Kommentar-Refresh — kein Flackern
   async function silentRefreshComments() {
     try {
       const data = await fetchTicket(id)
@@ -63,24 +60,16 @@ export default function TicketDetailPage() {
   async function silentRefreshTicket() {
     try {
       const data = await fetchTicket(id)
-      setTicket(data)
-      setStatus(data.status)
-      setPriority(data.priority)
-      setAgentId(data.assigned_agent?.id || '')
+      setTicket(data); setStatus(data.status)
+      setPriority(data.priority); setAgentId(data.assigned_agent?.id || '')
       setGroupId(data.assigned_group_id || '')
     } catch {}
   }
 
-  // WebSocket — Live-Updates für dieses Ticket
   const handleWsEvent = useCallback((event) => {
-    if (!event.ticket_id) return
-    // Nur Events für dieses Ticket verarbeiten
-    if (event.ticket_id !== id) return
-    if (event.type === 'ticket_update') {
-      silentRefreshTicket()
-    } else if (event.type === 'new_comment') {
-      silentRefreshComments()
-    }
+    if (!event.ticket_id || event.ticket_id !== id) return
+    if (event.type === 'ticket_update') silentRefreshTicket()
+    else if (event.type === 'new_comment') silentRefreshComments()
   }, [id])
 
   const token = localStorage.getItem('ze-token')
@@ -102,14 +91,11 @@ export default function TicketDetailPage() {
 
   useEffect(() => {
     loadTicket()
-    if (isAgent) { loadAgents(); loadGroups(); }
+    if (isAgent) { loadAgents(); loadGroups() }
   }, [id])
 
-  // Gruppe setzen sobald ticket + groups geladen
   useEffect(() => {
-    if (ticket && groups.length > 0) {
-      setGroupId(ticket.assigned_group_id || '')
-    }
+    if (ticket && groups.length > 0) setGroupId(ticket.assigned_group_id || '')
   }, [ticket, groups])
 
   async function loadTicket() {
@@ -135,7 +121,11 @@ export default function TicketDetailPage() {
   async function handleSave() {
     setSaving(true); setSavedMsg('')
     try {
-      const updated = await updateTicket(id, { status, priority, assigned_agent_id: agentId || null, assigned_group_id: groupId || null })
+      const updated = await updateTicket(id, {
+        status, priority,
+        assigned_agent_id: agentId || null,
+        assigned_group_id: groupId || null,
+      })
       setTicket(updated); setStatus(updated.status)
       setPriority(updated.priority); setAgentId(updated.assigned_agent?.id || '')
       setGroupId(updated.assigned_group_id || '')
@@ -207,8 +197,8 @@ export default function TicketDetailPage() {
                   {ticket.description.split('\n').map((line, i) => <p key={i}>{line}</p>)}
                 </div>
                 <div className="detail-timestamps">
-                  <span>Erstellt: {formatDate(ticket.created_at)}</span>
-                  <span>Aktualisiert: {formatDate(ticket.updated_at)}</span>
+                  <span>{t('ticket_detail.created')}: {formatDate(ticket.created_at)}</span>
+                  <span>{t('ticket_detail.updated')}: {formatDate(ticket.updated_at)}</span>
                 </div>
               </div>
 
@@ -310,22 +300,21 @@ export default function TicketDetailPage() {
                     <option value="">{t('ticket_detail.sidebar_unassigned')}</option>
                     {agents.map(a => <option key={a.id} value={a.id}>{a.display_name}</option>)}
                   </select>
-                  <label className="detail-sidebar-label">Gruppe</label>
+                  <label className="detail-sidebar-label">{t('ticket_detail.sidebar_group')}</label>
                   <select className="detail-select" value={groupId} onChange={e => setGroupId(e.target.value)}>
                     <option value="">— {t('ticket_detail.sidebar_no_group')} —</option>
                     {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                   </select>
-                  {/* Ticket übernehmen — nur wenn nicht mir zugewiesen */}
-                  {!ticket?.assigned_agent || ticket.assigned_agent.id !== user?.id ? (
+                  {(!ticket?.assigned_agent || ticket.assigned_agent.id !== user?.id) && (
                     <button className="detail-take-btn" onClick={async () => {
                       await updateTicket(id, { assigned_agent_id: user.id })
                       const refreshed = await fetchTicket(id)
                       setTicket(refreshed)
                       setAgentId(user.id)
                     }}>
-                      🙋 Ticket übernehmen
+                      {t('ticket_detail.take_btn')}
                     </button>
-                  ) : null}
+                  )}
                   <button className="detail-save-btn" onClick={handleSave} disabled={!hasChanges || saving}>
                     {saving ? t('ticket_detail.sidebar_saving') : t('ticket_detail.sidebar_save')}
                   </button>
@@ -363,9 +352,7 @@ export default function TicketDetailPage() {
                   </div>
                 )}
               </div>
-              {isAgent && (
-                <TicketChecklist ticketId={ticket.id} />
-              )}
+              {isAgent && <TicketChecklist ticketId={ticket.id} />}
             </aside>
           </div>
         )}

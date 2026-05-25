@@ -5,7 +5,6 @@ import { useTheme } from '../context/ThemeContext'
 import { useTranslation } from 'react-i18next'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { fetchTicket, addComment } from '../api/tickets'
-import axios from 'axios'
 import './PortalTicketDetailPage.css'
 import { formatDate } from '../utils/dateFormat'
 import TicketAttachments from '../components/TicketAttachments'
@@ -15,8 +14,6 @@ const STATUS_CLASS = {
   geloest: 'portal-badge--done', geschlossen: 'portal-badge--closed',
 }
 
-
-
 export default function PortalTicketDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -25,13 +22,13 @@ export default function PortalTicketDetailPage() {
   const { t } = useTranslation()
   const commentEndRef = useRef(null)
 
-  const [ticket,        setTicket]        = useState(null)
-  const [loading,       setLoading]       = useState(true)
-  const [agentOnline,   setAgentOnline]   = useState(false)
-  const [agentName,     setAgentName]     = useState('')
-  const [commentText,   setCommentText]   = useState('')
-  const [sending,       setSending]       = useState(false)
-  const [commentError,  setCommentError]  = useState(null)
+  const [ticket,       setTicket]       = useState(null)
+  const [loading,      setLoading]      = useState(true)
+  const [agentOnline,  setAgentOnline]  = useState(false)
+  const [agentName,    setAgentName]    = useState('')
+  const [commentText,  setCommentText]  = useState('')
+  const [sending,      setSending]      = useState(false)
+  const [commentError, setCommentError] = useState(null)
 
   async function loadTicket() {
     try {
@@ -49,15 +46,12 @@ export default function PortalTicketDetailPage() {
     }
   }, [ticket?.comments])
 
-  // WebSocket — Agent-Präsenz + neue Kommentare
   const token = localStorage.getItem('ze-token')
   useWebSocket(token, useCallback((event) => {
     if (event.type === 'agent_joined' && event.ticket_id === id) {
-      setAgentOnline(true)
-      setAgentName(event.agent_name || '')
+      setAgentOnline(true); setAgentName(event.agent_name || '')
     } else if (event.type === 'agent_left' && event.ticket_id === id) {
-      setAgentOnline(false)
-      setAgentName('')
+      setAgentOnline(false); setAgentName('')
     } else if (event.type === 'new_comment' && event.ticket_id === id) {
       loadTicket()
     } else if (event.type === 'ticket_update' && event.ticket_id === id) {
@@ -70,18 +64,14 @@ export default function PortalTicketDetailPage() {
     if (!commentText.trim()) return
     setSending(true); setCommentError(null)
     try {
-      const newComment = await addComment(id, {
-        content: commentText,
-        comment_type: 'antwort',
-      })
+      const newComment = await addComment(id, { content: commentText, comment_type: 'antwort' })
       setTicket(prev => ({ ...prev, comments: [...prev.comments, newComment] }))
       setCommentText('')
     } catch {
-      setCommentError('Nachricht konnte nicht gesendet werden.')
+      setCommentError(t('portal.comment_error'))
     } finally { setSending(false) }
   }
 
-  // Nur öffentliche Kommentare (keine internen Notizen) für Kunden
   const publicComments = ticket?.comments.filter(c => c.comment_type === 'antwort') || []
 
   return (
@@ -97,7 +87,9 @@ export default function PortalTicketDetailPage() {
           <button className="portal-pw-link" onClick={() => navigate('/portal/passwort')}>
             🔑 {user?.display_name}
           </button>
-          <button className="portal-logout-btn" onClick={() => { logout(); window.location.href = '/login' }}>{t('portal.logout')}</button>
+          <button className="portal-logout-btn" onClick={() => { logout(); window.location.href = '/login' }}>
+            {t('portal.logout')}
+          </button>
         </div>
       </header>
 
@@ -126,35 +118,30 @@ export default function PortalTicketDetailPage() {
                 {ticket.description.split('\n').map((line, i) => <p key={i}>{line}</p>)}
               </div>
               <div className="portal-detail-meta">
-                <span>Erstellt: {formatDate(ticket.created_at)}</span>
+                <span>{t('portal.detail_created')}: {formatDate(ticket.created_at)}</span>
                 {ticket.assigned_agent && (
-                  <span>Agent: {ticket.assigned_agent.display_name}</span>
+                  <span>{t('portal.detail_agent')}: {ticket.assigned_agent.display_name}</span>
                 )}
               </div>
             </div>
 
             {/* ── Ansprechpartner ── */}
-            {ticket.assigned_agent && (
+            {ticket.assigned_agent ? (
               <div className="portal-presence glass">
                 <div className="portal-presence__dot portal-presence__dot--neutral" />
                 <div className="portal-presence__text">
                   <span className="portal-presence__status">
-                    Ihr Ansprechpartner: {ticket.assigned_agent.display_name}
+                    {t('portal.detail_contact')}: {ticket.assigned_agent.display_name}
                   </span>
-                  <span className="portal-presence__hint">
-                    Sie können eine Nachricht hinterlassen — der Agent antwortet beim nächsten Besuch.
-                  </span>
+                  <span className="portal-presence__hint">{t('portal.detail_contact_hint')}</span>
                 </div>
               </div>
-            )}
-            {!ticket.assigned_agent && (
+            ) : (
               <div className="portal-presence glass">
                 <div className="portal-presence__dot portal-presence__dot--neutral" />
                 <div className="portal-presence__text">
-                  <span className="portal-presence__status">Support-Team</span>
-                  <span className="portal-presence__hint">
-                    Ihr Ticket wird baldmöglichst bearbeitet.
-                  </span>
+                  <span className="portal-presence__status">{t('portal.detail_support_team')}</span>
+                  <span className="portal-presence__hint">{t('portal.detail_team_hint')}</span>
                 </div>
               </div>
             )}
@@ -164,11 +151,11 @@ export default function PortalTicketDetailPage() {
 
             {/* ── Chat-Verlauf ── */}
             <div className="portal-chat glass">
-              <h2 className="portal-chat__title">Verlauf ({publicComments.length})</h2>
+              <h2 className="portal-chat__title">{t('portal.detail_history', { count: publicComments.length })}</h2>
 
               <div className="portal-chat__messages">
                 {publicComments.length === 0 ? (
-                  <div className="portal-chat__empty">Noch keine Nachrichten.</div>
+                  <div className="portal-chat__empty">{t('portal.detail_no_messages')}</div>
                 ) : (
                   publicComments.map(comment => {
                     const isOwn = comment.author?.id === user?.id
@@ -179,7 +166,7 @@ export default function PortalTicketDetailPage() {
                           {comment.content.split('\n').map((line, i) => <p key={i}>{line}</p>)}
                         </div>
                         <div className="portal-message__meta">
-                          <span>{comment.author?.display_name || 'System'}</span>
+                          <span>{comment.author?.display_name || t('ticket_detail.author_system')}</span>
                           <span>{formatDate(comment.created_at)}</span>
                         </div>
                       </div>
@@ -189,13 +176,10 @@ export default function PortalTicketDetailPage() {
                 <div ref={commentEndRef} />
               </div>
 
-              {/* ── Eingabe ── */}
               {ticket.status !== 'geschlossen' ? (
                 <form className="portal-chat__form" onSubmit={handleSendComment}>
                   {!agentOnline && (
-                    <div className="portal-chat__offline-hint">
-                      💬 Sie können eine Nachricht hinterlassen — der Agent antwortet beim nächsten Besuch.
-                    </div>
+                    <div className="portal-chat__offline-hint">{t('portal.detail_offline_hint')}</div>
                   )}
                   <div className="portal-chat__input-row">
                     <textarea
@@ -204,7 +188,6 @@ export default function PortalTicketDetailPage() {
                       value={commentText}
                       onChange={e => setCommentText(e.target.value)}
                       rows={3}
-
                     />
                     <button type="submit" className="portal-chat__send-btn"
                       disabled={!commentText.trim() || sending}>
@@ -212,10 +195,10 @@ export default function PortalTicketDetailPage() {
                     </button>
                   </div>
                   {commentError && <div className="portal-chat__error">{commentError}</div>}
-                  <span className="portal-chat__hint">Shift+Enter für neue Zeile</span>
+                  <span className="portal-chat__hint">{t('portal.detail_shift_enter')}</span>
                 </form>
               ) : (
-                <div className="portal-chat__closed">Dieses Ticket ist geschlossen.</div>
+                <div className="portal-chat__closed">{t('portal.detail_closed')}</div>
               )}
             </div>
           </div>

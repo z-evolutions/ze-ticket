@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import './TicketAttachments.css'
 
@@ -21,6 +22,7 @@ function formatBytes(bytes) {
 }
 
 export default function TicketAttachments({ ticketId, isAgent }) {
+  const { t } = useTranslation()
   const [attachments, setAttachments] = useState([])
   const [uploading,   setUploading]   = useState(false)
   const [error,       setError]       = useState(null)
@@ -50,7 +52,7 @@ export default function TicketAttachments({ ticketId, isAgent }) {
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch {
-      setError('Fehler beim Herunterladen.')
+      setError(t('attachments.error_download'))
     }
   }
 
@@ -70,7 +72,7 @@ export default function TicketAttachments({ ticketId, isAgent }) {
         setAttachments(prev => [...prev, res.data])
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Fehler beim Hochladen.')
+      setError(err.response?.data?.detail || t('attachments.error_upload'))
     } finally {
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -78,19 +80,19 @@ export default function TicketAttachments({ ticketId, isAgent }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Anhang wirklich löschen?')) return
+    if (!window.confirm(t('attachments.confirm_delete'))) return
     try {
       await axios.delete(`/api/attachments/${id}`)
       setAttachments(prev => prev.filter(a => a.id !== id))
     } catch {
-      setError('Fehler beim Löschen.')
+      setError(t('attachments.error_delete'))
     }
   }
 
   return (
     <div className="attachments-section glass">
       <div className="attachments-header">
-        <span className="attachments-title">Anhänge</span>
+        <span className="attachments-title">{t('attachments.title')}</span>
         <span className="attachments-count">{attachments.length}</span>
         {isAgent && (
           <>
@@ -101,7 +103,7 @@ export default function TicketAttachments({ ticketId, isAgent }) {
             <button className="attachments-upload-btn"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}>
-              {uploading ? '⏳' : '+ Datei'}
+              {uploading ? '⏳' : t('attachments.upload_btn')}
             </button>
           </>
         )}
@@ -110,7 +112,7 @@ export default function TicketAttachments({ ticketId, isAgent }) {
       {error && <div className="attachments-error">{error}</div>}
 
       {attachments.length === 0 ? (
-        <div className="attachments-empty">Keine Anhänge</div>
+        <div className="attachments-empty">{t('attachments.empty')}</div>
       ) : (
         <div className="attachments-list">
           {attachments.map(a => (
@@ -126,7 +128,7 @@ export default function TicketAttachments({ ticketId, isAgent }) {
               {isAgent && (
                 <button className="attachment-delete-btn"
                   onClick={() => handleDelete(a.id)}
-                  title="Löschen">✕</button>
+                  title={t('common.delete')}>✕</button>
               )}
             </div>
           ))}

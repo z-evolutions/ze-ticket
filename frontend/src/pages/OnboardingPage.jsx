@@ -18,7 +18,7 @@ export default function OnboardingPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    if (newPw !== newPwConfirm) { setError('Die Passwörter stimmen nicht überein.'); return }
+    if (newPw !== newPwConfirm) { setError(t('auth.onboarding_pw_mismatch')); return }
     setLoading(true)
     try {
       const res = await axios.post('/api/auth/onboarding', {
@@ -31,7 +31,7 @@ export default function OnboardingPage() {
       window.location.href = '/dashboard'
     } catch (err) {
       const detail = err.response?.data?.detail
-      setError(Array.isArray(detail) ? detail.map(d => d.msg).join(' ') : detail || 'Fehler beim Passwort setzen.')
+      setError(Array.isArray(detail) ? detail.map(d => d.msg).join(' ') : detail || t('auth.onboarding_error'))
     } finally { setLoading(false) }
   }
 
@@ -55,18 +55,18 @@ export default function OnboardingPage() {
           <div className="form-group">
             <label>{t('auth.onboarding_temp_pw')} <span className="onboarding-hint">{t('auth.onboarding_temp_pw_hint')}</span></label>
             <input type="password" value={onboardingPw} onChange={e => setOnboardingPw(e.target.value)}
-              placeholder="Temporäres Passwort" required />
+              placeholder={t('auth.onboarding_placeholder_temp')} required />
           </div>
           <div className="onboarding-divider" />
           <div className="form-group">
             <label>{t('auth.onboarding_new_pw')}</label>
             <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
-              placeholder="Mindestens 10 Zeichen" required autoFocus />
+              placeholder={t('auth.onboarding_placeholder_new')} required autoFocus />
           </div>
           <div className="form-group">
             <label>{t('auth.onboarding_new_pw_confirm')}</label>
             <input type="password" value={newPwConfirm} onChange={e => setNewPwConfirm(e.target.value)}
-              placeholder="Passwort wiederholen" required />
+              placeholder={t('auth.onboarding_placeholder_confirm')} required />
           </div>
           <div className="onboarding-policy">{t('auth.onboarding_policy')}</div>
           {error && <div className="onboarding-error">{error}</div>}

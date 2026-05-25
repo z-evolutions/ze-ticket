@@ -132,7 +132,7 @@ export default function TicketsPage() {
               </div>
               <div className="tickets-kpi-card__text-wrap">
                 <span className="tickets-kpi-card__label">{t('tickets.status_neu')}</span>
-                <span className="tickets-kpi-card__sub">Offen & unbearbeitet</span>
+                <span className="tickets-kpi-card__sub">{t('tickets.kpi_sub_new')}</span>
               </div>
             </button>
             <button className="tickets-kpi-card" onClick={() => { setFilterStatus('in_bearbeitung'); setAssignedToMe(false); setPage(1) }}>
@@ -141,7 +141,7 @@ export default function TicketsPage() {
               </div>
               <div className="tickets-kpi-card__text-wrap">
                 <span className="tickets-kpi-card__label">{t('tickets.status_in_bearbeitung')}</span>
-                <span className="tickets-kpi-card__sub">Aktive Tickets</span>
+                <span className="tickets-kpi-card__sub">{t('tickets.kpi_sub_progress')}</span>
               </div>
             </button>
             <button className="tickets-kpi-card" onClick={() => { setFilterStatus('geloest'); setAssignedToMe(false); setPage(1) }}>
@@ -158,7 +158,7 @@ export default function TicketsPage() {
               </div>
               <div className="tickets-kpi-card__text-wrap">
                 <span className="tickets-kpi-card__label">{t('tickets.meine_tickets')}</span>
-                <span className="tickets-kpi-card__sub">Mir zugewiesen</span>
+                <span className="tickets-kpi-card__sub">{t('tickets.kpi_sub_mine')}</span>
               </div>
             </button>
             {stats.sla_breached > 0 && (
@@ -168,7 +168,7 @@ export default function TicketsPage() {
                 </div>
                 <div className="tickets-kpi-card__text-wrap">
                   <span className="tickets-kpi-card__label">{t('dashboard.stats_sla')}</span>
-                  <span className="tickets-kpi-card__sub">SLA verletzt</span>
+                  <span className="tickets-kpi-card__sub">{t('tickets.kpi_sub_sla')}</span>
                 </div>
               </button>
             )}
@@ -222,7 +222,7 @@ export default function TicketsPage() {
         {isSearchMode && !searching && (
           <div className="tickets-search-info">
             {t('tickets.search_results', { count: searchResults.total, query: searchQuery })}
-            <button className="tickets-search-reset" onClick={clearSearch}>✕ Suche beenden</button>
+            <button className="tickets-search-reset" onClick={clearSearch}>{t('tickets.search_end')}</button>
           </div>
         )}
 
@@ -232,7 +232,7 @@ export default function TicketsPage() {
           {isLoading ? (
             <div className="tickets-loading">
               <div className="tickets-spinner" />
-              <span>{isSearchMode ? t('common.search') + '…' : t('tickets.loading')}</span>
+              <span>{isSearchMode ? t('tickets.searching') : t('tickets.loading')}</span>
             </div>
           ) : displayTickets.length === 0 ? (
             <div className="tickets-empty">

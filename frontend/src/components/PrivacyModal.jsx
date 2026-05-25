@@ -11,7 +11,7 @@ export default function PrivacyModal({ onClose, type = 'privacy_text' }) {
   useEffect(() => {
     axios.get(`/api/config/${type}/rendered`)
       .then(r => setContent(r.data.value || ''))
-      .catch(() => setContent('<p>Inhalt konnte nicht geladen werden.</p>'))
+      .catch(() => setContent(`<p>${t('privacy.load_error')}</p>`))
       .finally(() => setLoading(false))
   }, [type])
 
@@ -32,19 +32,17 @@ export default function PrivacyModal({ onClose, type = 'privacy_text' }) {
       <div className="privacy-modal glass">
         <div className="privacy-modal__header">
           <h2 className="privacy-modal__title">{title}</h2>
-          <button className="privacy-modal__close" onClick={onClose} aria-label="Schließen">✕</button>
+          <button className="privacy-modal__close" onClick={onClose} aria-label={t('common.close')}>✕</button>
         </div>
-
         <div className="privacy-modal__body">
           {loading
-            ? <div className="privacy-loading">Lade…</div>
+            ? <div className="privacy-loading">{t('privacy.loading')}</div>
             : <div
                 className="privacy-content"
                 dangerouslySetInnerHTML={{ __html: content }}
               />
           }
         </div>
-
         <div className="privacy-modal__footer">
           <button className="privacy-close-btn" onClick={onClose}>
             {closeBtn}
