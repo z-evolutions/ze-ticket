@@ -1,0 +1,73 @@
+.nbell { position: relative; }
+
+.nbell__btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.1rem; padding: 0.3rem; position: relative;
+  display: flex; align-items: center;
+}
+
+.nbell__badge {
+  position: absolute; top: -2px; right: -4px;
+  background: #ef4444; color: white;
+  font-size: 0.6rem; font-weight: 700;
+  min-width: 16px; height: 16px;
+  border-radius: 8px; padding: 0 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.nbell__dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 280px; max-height: 360px;
+  background: var(--bg-secondary, #0d1b3e);
+  border: 1px solid var(--border-color, #00d4ff33);
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 1000;
+}
+
+.nbell__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.6rem 0.875rem;
+  border-bottom: 1px solid var(--border-color, #00d4ff22);
+  font-size: 0.75rem; color: var(--text-muted, #8899aa);
+}
+
+.nbell__clear {
+  background: none; border: none; cursor: pointer;
+  color: var(--accent, #00d4ff); font-size: 0.72rem;
+}
+
+.nbell__empty {
+  padding: 1rem; text-align: center;
+  font-size: 0.8rem; color: var(--text-muted, #8899aa);
+}
+
+.nbell__list { overflow-y: auto; max-height: 300px; }
+
+.nbell__item {
+  width: 100%; display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem; align-items: center;
+  padding: 0.6rem 0.875rem;
+  border: none; border-bottom: 1px solid var(--border-color, #00d4ff11);
+  background: none; cursor: pointer; text-align: left;
+  transition: background 0.15s;
+}
+
+.nbell__item:hover { background: rgba(0, 212, 255, 0.05); }
+
+.nbell__item-number {
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--accent, #00d4ff);
+}
+
+.nbell__item-text {
+  font-size: 0.78rem; color: var(--text, #e0e0e0);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.nbell__item-time {
+  font-size: 0.68rem; color: var(--text-muted, #8899aa);
+  white-space: nowrap;
+}

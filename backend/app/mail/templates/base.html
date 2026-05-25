@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ZE-Ticket{% endblock %}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #0a0f1e;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    .wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .header {
+      background: linear-gradient(135deg, #0d1b3e 0%, #0a1628 100%);
+      border: 1px solid #00d4ff;
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      font-family: 'Courier New', monospace;
+      font-size: 24px;
+      color: #00d4ff;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    .header p {
+      color: #7ab8d4;
+      font-size: 12px;
+      margin-top: 6px;
+      letter-spacing: 2px;
+    }
+    .body {
+      background: #0d1b3e;
+      border: 1px solid #00d4ff33;
+      border-top: none;
+      border-bottom: none;
+      padding: 36px 40px;
+    }
+    .body p {
+      line-height: 1.7;
+      color: #c8d8e8;
+      margin-bottom: 16px;
+    }
+    .highlight-box {
+      background: #0a1628;
+      border: 1px solid #00d4ff55;
+      border-left: 4px solid #00d4ff;
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin: 24px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      color: #00d4ff;
+      letter-spacing: 3px;
+      text-align: center;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #00d4ff, #0099cc);
+      color: #0a0f1e !important;
+      text-decoration: none;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      padding: 14px 32px;
+      border-radius: 4px;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+    .btn-wrapper {
+      text-align: center;
+      margin: 28px 0;
+    }
+    .footer {
+      background: #070d1a;
+      border: 1px solid #00d4ff22;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      padding: 20px 40px;
+      text-align: center;
+      font-size: 11px;
+      color: #4a6080;
+      line-height: 1.6;
+    }
+    .footer a { color: #00d4ff88; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <div class="header">
+      <h1>ZE-Ticket</h1>
+      <p>Z-Evolutions Support System</p>
+    </div>
+
+    <div class="body">
+      {% block content %}{% endblock %}
+    </div>
+
+    <div class="footer">
+      <p>Diese E-Mail wurde automatisch generiert — bitte nicht direkt antworten.</p>
+      <p style="margin-top:8px;">
+        <a href="{{ app_url }}">{{ app_url }}</a> &nbsp;·&nbsp;
+        Z-Evolutions &nbsp;·&nbsp; support@z-evolutions.de
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>

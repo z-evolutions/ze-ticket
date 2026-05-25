@@ -1,0 +1,121 @@
+.attachments-section {
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.attachments-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.attachments-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  color: var(--accent);
+  flex: 1;
+  letter-spacing: 0.03em;
+}
+
+.attachments-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 0.1rem 0.5rem;
+}
+
+.attachments-upload-btn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.attachments-upload-btn:hover:not(:disabled) { opacity: 0.85; }
+.attachments-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.attachments-empty {
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.attachments-error {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  color: var(--error);
+  background: rgba(255,77,109,0.08);
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--glass-border);
+  transition: background 0.15s;
+}
+
+.attachment-item:last-child { border-bottom: none; }
+.attachment-item:hover { background: rgba(255,255,255,0.03); }
+
+.attachment-icon { font-size: 1rem; flex-shrink: 0; }
+
+.attachment-name {
+  flex: 1;
+  font-size: 0.82rem;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachment-name:hover { text-decoration: underline; }
+
+.attachment-size {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.attachment-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.attachment-delete-btn:hover {
+  color: var(--error);
+  background: rgba(255,77,109,0.1);
+}
+
+.attachment-name--btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}

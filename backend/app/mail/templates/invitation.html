@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Einladung zu ZE-Ticket{% endblock %}
+
+{% block content %}
+  <p>Hallo <strong style="color:#00d4ff;">{{ display_name }}</strong>,</p>
+
+  <p>
+    du wurdest zum <strong>ZE-Ticket Support-System</strong> eingeladen.
+    Dein Account wurde mit der Rolle <strong style="color:#00d4ff;">{{ role }}</strong> angelegt.
+  </p>
+
+  <p>Dein temporäres Einmalpasswort lautet:</p>
+
+  <div class="highlight-box">{{ onboarding_password }}</div>
+
+  <p>
+    Klicke auf den Button um dich anzumelden. Du wirst beim ersten Login
+    aufgefordert, ein eigenes Passwort zu vergeben.
+  </p>
+
+  <div class="btn-wrapper">
+    <a href="{{ login_url }}" class="btn">&#9654; Jetzt anmelden</a>
+  </div>
+
+  <p style="font-size:13px; color:#4a6080;">
+    ⚠️ Dieses Passwort ist nur einmalig gültig und wird nach der ersten
+    Anmeldung deaktiviert. Bitte gib es nicht weiter.
+  </p>
+{% endblock %}

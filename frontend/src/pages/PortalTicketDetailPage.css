@@ -1,0 +1,82 @@
+.portal-detail-layout { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.portal-breadcrumb { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.portal-back-btn {
+  background: none; border: 1px solid var(--border-color); color: var(--text-secondary);
+  padding: 0.4rem 1rem; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.88rem; transition: var(--transition);
+}
+.portal-back-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+.portal-detail-card {
+  border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem;
+}
+.portal-detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.portal-detail-subject { font-family: 'Inter', sans-serif; font-size: 1.1rem; color: var(--text-primary); margin: 0; }
+.portal-detail-description { color: var(--text-secondary); line-height: 1.7; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-bottom: 1rem; }
+.portal-detail-description p { margin: 0 0 0.5rem 0; }
+.portal-detail-meta { display: flex; gap: 1.5rem; font-size: 0.78rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 0.75rem; flex-wrap: wrap; }
+
+/* Präsenz */
+.portal-presence {
+  border: 1px solid var(--border-color); border-radius: var(--radius-md);
+  padding: 0.85rem 1.25rem; display: flex; align-items: center; gap: 0.85rem;
+}
+.portal-presence--online { border-color: rgba(0,255,157,0.3); background: rgba(0,255,157,0.05); }
+.portal-presence--offline { border-color: var(--border-color); }
+.portal-presence__dot {
+  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+}
+.portal-presence--online  .portal-presence__dot { background: var(--success); box-shadow: 0 0 6px var(--success); animation: portal-pulse 2s ease-in-out infinite; }
+.portal-presence--offline .portal-presence__dot { background: var(--text-muted); }
+@keyframes portal-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.portal-presence__text { display: flex; flex-direction: column; gap: 0.1rem; }
+.portal-presence__status { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+.portal-presence--online  .portal-presence__status { color: var(--success); }
+.portal-presence__hint { font-size: 0.78rem; color: var(--text-muted); }
+
+/* Chat */
+.portal-chat { border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; }
+.portal-chat__title { font-family: 'Inter', sans-serif; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); margin: 0; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); }
+.portal-chat__messages { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 200px; max-height: 400px; overflow-y: auto; }
+.portal-chat__empty { text-align: center; color: var(--text-muted); font-size: 0.88rem; padding: 2rem; }
+
+/* Nachrichten */
+.portal-message { display: flex; flex-direction: column; max-width: 75%; }
+.portal-message--own { align-self: flex-end; align-items: flex-end; }
+.portal-message--agent { align-self: flex-start; align-items: flex-start; }
+.portal-message__bubble {
+  padding: 0.65rem 1rem; border-radius: var(--radius-md);
+  font-size: 0.9rem; line-height: 1.5;
+}
+.portal-message__bubble p { margin: 0 0 0.3rem 0; }
+.portal-message__bubble p:last-child { margin: 0; }
+.portal-message--own   .portal-message__bubble { background: var(--accent-cyan); color: var(--bg-primary); border-bottom-right-radius: 4px; }
+.portal-message--agent .portal-message__bubble { background: var(--bg-secondary); color: var(--text-primary); border-bottom-left-radius: 4px; }
+.portal-message__meta { font-size: 0.72rem; color: var(--text-muted); display: flex; gap: 0.5rem; margin-top: 0.25rem; padding: 0 0.25rem; }
+
+/* Eingabe */
+.portal-chat__form { padding: 1rem; border-top: 1px solid var(--border-color); }
+.portal-chat__offline-hint { background: var(--accent-cyan-dim); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; font-size: 0.82rem; margin-bottom: 0.75rem; }
+.portal-chat__input-row { display: flex; gap: 0.5rem; align-items: flex-end; }
+.portal-chat__input {
+  flex: 1; background: var(--bg-secondary); border: 1px solid var(--border-color);
+  color: var(--text-primary); padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm); font-size: 0.9rem; font-family: var(--font-body);
+  resize: none; transition: var(--transition);
+}
+.portal-chat__input:focus { border-color: var(--accent-cyan); outline: none; }
+.portal-chat__send-btn {
+  background: var(--accent-cyan); color: var(--bg-primary); border: none;
+  width: 44px; height: 44px; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 1.1rem; flex-shrink: 0; transition: var(--transition);
+}
+.portal-chat__send-btn:hover:not(:disabled) { opacity: 0.85; }
+.portal-chat__send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.portal-chat__hint { font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.35rem; }
+.portal-chat__error { color: var(--error); font-size: 0.82rem; margin-top: 0.35rem; }
+.portal-chat__closed { padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border-color); }
+
+.portal-presence__dot--neutral {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}

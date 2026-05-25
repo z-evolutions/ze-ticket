@@ -1,0 +1,63 @@
+/* ZE-Ticket Design System — Z-Evolutions Cyberpunk */
+/* Lokale Fonts — kein Google-Server-Kontakt (DSGVO-konform) */
+@import '@fontsource/inter/300.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+:root {
+  /* Farben — Dark Mode (Standard) */
+  --bg-primary:     #0a0f1e;
+  --bg-secondary:   #0d1530;
+  --bg-card:        rgba(13, 21, 48, 0.7);
+  --bg-glass:       rgba(0, 212, 255, 0.05);
+  --accent-cyan:    #00d4ff;
+  --accent-cyan-dim: rgba(0, 212, 255, 0.15);
+  --accent-cyan-glow: rgba(0, 212, 255, 0.4);
+  --text-primary:   #e8f4ff;
+  --text-secondary: #7a9cc0;
+  --text-muted:     #4a6080;
+  --border-color:   rgba(0, 212, 255, 0.2);
+  --border-hover:   rgba(0, 212, 255, 0.6);
+  --error:          #ff4d6d;
+  --success:        #00ff9d;
+  --warning:        #ffb800;
+  /* Typografie */
+  --font-display:   'Inter', sans-serif;
+  --font-body:      'Inter', sans-serif;
+  /* Abstände */
+  --radius-sm:      6px;
+  --radius-md:      12px;
+  --radius-lg:      20px;
+  /* Transitions */
+  --transition:     all 0.2s ease;
+  /* Aliase für Kompatibilität */
+  --bg:           var(--bg-primary);
+  --text:         var(--text-primary);
+  --glass-bg:     var(--bg-glass);
+  --glass-border: var(--border-color);
+  --input-bg:     rgba(0, 212, 255, 0.05);
+  --accent:       var(--accent-cyan);
+}
+
+/* Light Mode */
+[data-theme="light"] {
+  --bg-primary:     #f0f4ff;
+  --bg-secondary:   #e0e8ff;
+  --bg-card:        rgba(255, 255, 255, 0.8);
+  --bg-glass:       rgba(0, 100, 200, 0.05);
+  --accent-cyan:    #0066cc;
+  --accent-cyan-dim: rgba(0, 100, 200, 0.1);
+  --accent-cyan-glow: rgba(0, 100, 200, 0.3);
+  --text-primary:   #0a1628;
+  --text-secondary: #3a5a80;
+  --text-muted:     #7a9ab0;
+  --border-color:   rgba(0, 100, 200, 0.2);
+  --border-hover:   rgba(0, 100, 200, 0.5);
+  /* Aliase für Kompatibilität */
+  --bg:           var(--bg-primary);
+  --text:         var(--text-primary);
+  --glass-bg:     var(--bg-glass);
+  --glass-border: var(--border-color);
+  --input-bg:     rgba(0, 100, 200, 0.05);
+  --accent:       var(--accent-cyan);
+}

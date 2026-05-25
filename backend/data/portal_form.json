@@ -1,0 +1,39 @@
+{
+  "fields": [
+    {
+      "key": "first_name",
+      "label_de": "Vorname",
+      "label_en": "First name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "last_name",
+      "label_de": "Nachname",
+      "label_en": "Last name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "email",
+      "label_de": "E-Mail",
+      "label_en": "Email",
+      "type": "email",
+      "required": true
+    },
+    {
+      "key": "subject",
+      "label_de": "Betreff",
+      "label_en": "Subject",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "description",
+      "label_de": "Ihr Anliegen",
+      "label_en": "Your request",
+      "type": "textarea",
+      "required": true
+    }
+  ]
+}
