@@ -30,7 +30,11 @@ ALLOWED_TYPES = {
     "application/x-zip-compressed",
 }
 
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# Upload-Verzeichnis wird beim ersten Request angelegt
+try:
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+except PermissionError:
+    pass  # In CI/Test-Umgebungen ohne Schreibrechte
 
 
 # ─── POST /api/attachments/upload ─────────────────────────────────────────────
