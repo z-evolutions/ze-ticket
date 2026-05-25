@@ -121,6 +121,21 @@ else
     log_ok "Python3 installiert"
 fi
 
+# ── Node.js + npm ──
+if command -v node &>/dev/null && command -v npm &>/dev/null; then
+    log_ok "Node.js $(node --version) + npm gefunden"
+else
+    log_warn "Node.js/npm nicht gefunden — installiere..."
+    apt-get update -qq
+    apt-get install -y -qq ca-certificates curl gnupg
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+    apt-get update -qq
+    apt-get install -y -qq nodejs
+    log_ok "Node.js $(node --version) + npm $(npm --version) installiert"
+fi
+
 echo ""
 echo -e "${BOLD}Schritt 2 — Installationsverzeichnis${NC}"
 hr_thin
@@ -289,7 +304,28 @@ chmod 600 "${INSTALL_DIR}/.env"
 log_ok ".env erstellt (Berechtigungen: 600)"
 
 echo ""
-echo -e "${BOLD}Schritt 6 — Docker-Images bauen${NC}"
+echo -e "${BOLD}Schritt 6 — Frontend bauen${NC}"
+hr_thin
+
+log_info "Installiere Frontend-Abhängigkeiten..."
+cd "${INSTALL_DIR}/frontend"
+npm install --silent
+log_info "Baue Frontend..."
+npm run build --silent
+log_ok "Frontend gebaut"
+
+# Frontend ins www-Verzeichnis deployen
+read -p "  Pfad zum Web-Root (z.B. /home/users/sascha/www/support.ihre-domain.de): " WWW_DIR
+if [[ -n "$WWW_DIR" ]]; then
+    mkdir -p "$WWW_DIR"
+    cp -r "${INSTALL_DIR}/frontend/dist/." "$WWW_DIR/"
+    log_ok "Frontend nach ${WWW_DIR} deployed"
+else
+    log_warn "Kein Web-Root angegeben — Frontend liegt unter: ${INSTALL_DIR}/frontend/dist/"
+fi
+
+echo ""
+echo -e "${BOLD}Schritt 7 — Docker-Images bauen${NC}"
 hr_thin
 
 cd "$INSTALL_DIR"
@@ -298,7 +334,7 @@ docker compose -f docker-compose.prod.yml build 2>&1 | grep -E "Step|Successfull
 log_ok "Images gebaut"
 
 echo ""
-echo -e "${BOLD}Schritt 7 — Container starten${NC}"
+echo -e "${BOLD}Schritt 8 — Container starten${NC}"
 hr_thin
 
 log_info "Starte Container..."
@@ -306,7 +342,7 @@ docker compose -f docker-compose.prod.yml up -d
 log_ok "Container gestartet"
 
 echo ""
-echo -e "${BOLD}Schritt 8 — Warte auf Backend...${NC}"
+echo -e "${BOLD}Schritt 9 — Warte auf Backend...${NC}"
 hr_thin
 
 log_info "Prüfe ob das Backend bereit ist..."
