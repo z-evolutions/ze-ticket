@@ -47,7 +47,6 @@ function App() {
           } />
           <Route path="/users" element={
             <ProtectedRoute><UsersPage /></ProtectedRoute>
-          } /></ProtectedRoute>
           } />
           <Route path="/groups" element={
             <ProtectedRoute><GroupsPage /></ProtectedRoute>
