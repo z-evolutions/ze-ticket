@@ -20,7 +20,7 @@ log_info() { echo -e "${CYAN}  →${NC} $1"; }
 ask()      { echo -e "${BOLD}$1${NC}"; }
 
 generate_password() {
-    python3 -c "import secrets, string; print(''.join(secrets.choice(string.ascii_letters + string.digits + '!@#%^&*') for _ in range(24)))"
+    python3 -c "import secrets, string; print(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32)))"
 }
 
 generate_secret_key() {
