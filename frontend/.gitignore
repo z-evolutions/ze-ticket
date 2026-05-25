@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables & Private Docs
+.env
+.env.*
+Workbook*
