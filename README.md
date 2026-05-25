@@ -64,6 +64,7 @@ Ein vollständig selbst gehostetes Support-Ticketsystem — ohne Abhängigkeiten
 ### Vollautomatisch (empfohlen)
 
 ```bash
+cd /tmp
 git clone https://github.com/z-evolutions/ze-ticket.git
 cd ze-ticket
 chmod +x install.sh
