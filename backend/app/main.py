@@ -145,7 +145,10 @@ try:
     os.makedirs("/app/uploads/avatars", exist_ok=True)
 except PermissionError:
     pass  # In CI/Test-Umgebungen ohne Schreibrechte
-app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
+# Uploads-Verzeichnis nur mounten wenn es existiert (nicht in CI)
+import os as _os
+if _os.path.exists("/app/uploads"):
+    app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
 
 # ─── Health Check ──────────────────────────────────────────────────────────────
 @app.get("/api/health", tags=["System"])
