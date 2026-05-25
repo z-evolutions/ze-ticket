@@ -109,6 +109,25 @@ Im Admin-Panel unter **Backup** können folgende Ziele konfiguriert werden:
 - **SFTP** — NAS, eigener Server
 - **S3-kompatibel** — Hetzner Object Storage, Backblaze B2, AWS S3
 
+### Automatisches Backup (Admin-Panel)
+
+Der integrierte Backup-Scheduler läuft als Background-Task im Container und erstellt täglich ein Backup zur konfigurierten Uhrzeit. Aktivierung im Admin-Panel unter **Backup**.
+
+### Manuelles Backup per Cronjob (optional)
+
+Zusätzlich kann `backup.sh` als Cronjob eingerichtet werden:
+
+```bash
+# Cronjob einrichten — täglich um 03:00 Uhr
+crontab -e
+
+# Folgende Zeile hinzufügen:
+0 3 * * * /pfad/zu/ze-ticket/backup.sh >> /var/log/ze-ticket-backup.log 2>&1
+```
+
+> Das Backup-Script sichert Datenbank + Uploads und speichert sie lokal.
+> Für externe Sicherung (WebDAV, SFTP, S3) den Admin-Panel-Scheduler verwenden.
+
 ### Manuelles Restore per Script
 
 ```bash
