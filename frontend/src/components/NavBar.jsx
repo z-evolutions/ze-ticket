@@ -32,7 +32,6 @@ export default function NavBar() {
     { path: '/dashboard',   label: t('nav.dashboard'),   always: true },
     { path: '/tickets',     label: t('nav.tickets'),     always: true },
 
-    { path: '/maintenance', label: t('nav.maintenance'), superadminOnly: true },
     { path: '/admin',       label: t('nav.admin'),       adminOnly: true },
   ].filter(item => {
     if (item.superadminOnly) return isSuperadmin

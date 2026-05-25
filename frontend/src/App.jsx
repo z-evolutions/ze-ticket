@@ -16,7 +16,6 @@ import PortalTicketsPage from './pages/PortalTicketsPage'
 import PortalTicketDetailPage from './pages/PortalTicketDetailPage'
 import PortalChangePasswordPage from './pages/PortalChangePasswordPage'
 import SetupPage from './pages/SetupPage'
-import MaintenancePage from './pages/MaintenancePage'
 import ProfilePage from './pages/ProfilePage'
 import AdminPage from './pages/AdminPage'
 
@@ -48,9 +47,7 @@ function App() {
           } />
           <Route path="/users" element={
             <ProtectedRoute><UsersPage /></ProtectedRoute>
-          } />
-          <Route path="/maintenance" element={
-            <ProtectedRoute><MaintenancePage /></ProtectedRoute>
+          } /></ProtectedRoute>
           } />
           <Route path="/groups" element={
             <ProtectedRoute><GroupsPage /></ProtectedRoute>
