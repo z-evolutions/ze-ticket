@@ -7,6 +7,7 @@ Ein vollständig selbst gehostetes Support-Ticketsystem — ohne Abhängigkeiten
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![React](https://img.shields.io/badge/react-19-blue)
+![Version](https://img.shields.io/badge/version-1.0.0--beta-orange)
 ![Tests](https://img.shields.io/badge/tests-45%20passed-green)
 
 ---

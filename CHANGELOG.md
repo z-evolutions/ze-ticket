@@ -7,7 +7,7 @@ Dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [1.0.0] — 2026-05-25
+## [1.0.0-beta] — 2026-05-25
 
 ### Erstveröffentlichung
 
