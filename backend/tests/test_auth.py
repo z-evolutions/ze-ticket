@@ -23,9 +23,9 @@ async def get_token(client: AsyncClient, email: str, password: str) -> str:
 
 
 class TestSetup:
-    async def test_setup_status_accessible(self, live_client: AsyncClient):
+    async def test_setup_status_accessible(self, client: AsyncClient):
         """Setup-Status-Endpunkt ist erreichbar."""
-        resp = await live_client.get("/api/setup/status")
+        resp = await client.get("/api/setup/status")
         assert resp.status_code == 200
         assert "setup_required" in resp.json()
 
@@ -49,9 +49,9 @@ class TestLogin:
         })
         assert resp.status_code in (401, 429)  # 429 = Rate Limiter
 
-    async def test_login_wrong_email(self, live_client: AsyncClient):
+    async def test_login_wrong_email(self, client: AsyncClient):
         """Login mit unbekannter E-Mail schlägt fehl."""
-        resp = await live_client.post("/api/auth/login", json={
+        resp = await client.post("/api/auth/login", json={
             "email": "nobody@test.de",
             "password": "Test1234!@#$"
         })

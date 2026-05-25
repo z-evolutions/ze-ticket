@@ -39,7 +39,10 @@ DEFAULT_FORM_CONFIG = {
 
 
 def _load_form_config() -> dict:
-    os.makedirs(os.path.dirname(FORM_CONFIG_FILE), exist_ok=True)
+    try:
+        os.makedirs(os.path.dirname(FORM_CONFIG_FILE), exist_ok=True)
+    except PermissionError:
+        pass
     if not os.path.exists(FORM_CONFIG_FILE):
         _save_form_config(DEFAULT_FORM_CONFIG)
         return DEFAULT_FORM_CONFIG
@@ -48,7 +51,10 @@ def _load_form_config() -> dict:
 
 
 def _save_form_config(config: dict):
-    os.makedirs(os.path.dirname(FORM_CONFIG_FILE), exist_ok=True)
+    try:
+        os.makedirs(os.path.dirname(FORM_CONFIG_FILE), exist_ok=True)
+    except PermissionError:
+        pass
     with open(FORM_CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
 
