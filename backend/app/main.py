@@ -141,7 +141,10 @@ app.include_router(attachments_router)
 
 # ─── Static Files (Uploads) ───────────────────────────────────────────────────
 import os
-os.makedirs("/app/uploads/avatars", exist_ok=True)
+try:
+    os.makedirs("/app/uploads/avatars", exist_ok=True)
+except PermissionError:
+    pass  # In CI/Test-Umgebungen ohne Schreibrechte
 app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
 
 # ─── Health Check ──────────────────────────────────────────────────────────────
