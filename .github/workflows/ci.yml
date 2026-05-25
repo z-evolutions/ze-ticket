@@ -73,6 +73,7 @@ jobs:
 
       - name: Tests ausführen
         env:
+          UPLOAD_DIR: /tmp/ze_ticket_uploads
           DATABASE_URL: postgresql+asyncpg://ze_ticket_user:test_password@localhost:5432/ze_ticket
           REDIS_URL: redis://localhost:6379
           ELASTICSEARCH_URL: http://localhost:9200
